@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!--
+      No permissions are declared here on purpose.
+
+      * INTERNET is not needed: the app never makes a network call.
+      * BIND_NOTIFICATION_LISTENER_SERVICE is a signature permission held by the
+        system; it is enforced *on* our service via android:permission below,
+        it is not something the app requests.
+      * The user grants notification access manually from
+        Settings > Notification access (see SetupActivity).
+    -->
+
+    <application
+        android:allowBackup="false"
+        android:icon="@drawable/ic_launcher"
+        android:label="@string/app_name"
+        android:supportsRtl="true"
+        android:theme="@style/AppTheme">
+
+        <activity
+            android:name=".SetupActivity"
+            android:exported="true"
+            android:label="@string/app_name">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <!--
+          Reads Instagram's own DM notifications. The system binds this, which is
+          why it is exported and guarded by the signature-level bind permission.
+        -->
+        <service
+            android:name=".DmNotificationListener"
+            android:exported="true"
+            android:label="@string/listener_label"
+            android:permission="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE">
+            <intent-filter>
+                <action android:name="android.service.notification.NotificationListenerService" />
+            </intent-filter>
+        </service>
+
+        <!-- Backs the scrollable list inside the widget. -->
+        <service
+            android:name=".DmWidgetService"
+            android:exported="false"
+            android:permission="android.permission.BIND_REMOTEVIEWS" />
+
+        <receiver
+            android:name=".DmWidgetProvider"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/dm_widget_info" />
+        </receiver>
+
+    </application>
+
+</manifest>

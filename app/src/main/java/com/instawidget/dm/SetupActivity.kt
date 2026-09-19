@@ -1,0 +1,70 @@
+package com.instawidget.dm
+
+import android.app.Activity
+import android.content.ActivityNotFoundException
+import android.os.Bundle
+import android.view.View
+import android.widget.Button
+import android.widget.TextView
+import android.widget.Toast
+
+/**
+ * One screen: what the app does, whether notification access is on, and a
+ * button that opens the Settings page where the user turns it on.
+ *
+ * Notification access cannot be granted programmatically, so this screen is the
+ * whole onboarding flow.
+ */
+class SetupActivity : Activity() {
+
+    private lateinit var statusView: TextView
+    private lateinit var grantButton: Button
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_setup)
+
+        // Explicit casts rather than the generic findViewById<T>: that
+        // overload only exists from API 26, and this source is also built
+        // against older platform jars by tools/build-apk-offline.sh.
+        statusView = findViewById(R.id.setup_status) as TextView
+        grantButton = findViewById(R.id.setup_grant_button) as Button
+
+        grantButton.setOnClickListener { openNotificationAccessSettings() }
+        (findViewById(R.id.setup_clear_button) as View).setOnClickListener { clearCache() }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        // Re-check on every resume: the user typically comes back here straight
+        // from the Settings screen.
+        render(Instagram.isNotificationAccessGranted(this))
+    }
+
+    private fun render(granted: Boolean) {
+        if (granted) {
+            statusView.setText(R.string.status_granted)
+            statusView.setTextColor(getColor(R.color.status_ok))
+            grantButton.setText(R.string.button_review_access)
+        } else {
+            statusView.setText(R.string.status_missing)
+            statusView.setTextColor(getColor(R.color.status_warn))
+            grantButton.setText(R.string.button_grant_access)
+        }
+    }
+
+    private fun openNotificationAccessSettings() {
+        try {
+            startActivity(Instagram.notificationAccessSettingsIntent())
+        } catch (e: ActivityNotFoundException) {
+            // Some heavily skinned builds hide this screen.
+            Toast.makeText(this, R.string.error_no_settings_screen, Toast.LENGTH_LONG).show()
+        }
+    }
+
+    private fun clearCache() {
+        DmStore.clear(this)
+        DmWidgetProvider.refreshAll(this)
+        Toast.makeText(this, R.string.toast_cleared, Toast.LENGTH_SHORT).show()
+    }
+}

@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">IG DM Widget</string>
+    <string name="listener_label">IG DM Widget notification reader</string>
+
+    <string name="widget_title">Instagram DMs</string>
+    <string name="widget_open_hint">Tap to open</string>
+    <string name="widget_empty">No DMs cached yet.\n\nTap here to check notification access, then wait for your next Instagram message.</string>
+
+    <string name="setup_headline">IG DM Widget</string>
+    <string name="setup_explainer">This app puts your most recent Instagram DM previews on your home screen. Tapping the widget opens Instagram\'s direct message inbox.</string>
+    <string name="setup_privacy">It works by reading the DM notifications Instagram already posts to this phone, and caching the last few on the device. There is no login, no Instagram API, and no INTERNET permission — nothing is ever sent anywhere.</string>
+    <string name="setup_limitation">Instagram has no public deep link to an individual conversation, so tapping any row opens the general inbox rather than that specific thread.</string>
+    <string name="setup_add_widget">Then long-press your home screen, choose Widgets, and drag \"IG DM Widget\" into place.</string>
+
+    <string name="status_granted">Notification access: granted</string>
+    <string name="status_missing">Notification access: not granted yet</string>
+
+    <string name="button_grant_access">Open notification access settings</string>
+    <string name="button_review_access">Review notification access settings</string>
+    <string name="button_clear_cache">Clear cached messages</string>
+
+    <string name="toast_cleared">Cached messages cleared</string>
+    <string name="error_no_settings_screen">This device has no notification access screen. Look for \"Notification access\" or \"Special app access\" in Settings.</string>
+</resources>

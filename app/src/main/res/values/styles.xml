@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- DeviceDefault keeps the setup screen native-looking without pulling in
+         AppCompat, which would be the app's only third-party dependency. -->
+    <style name="AppTheme" parent="@android:style/Theme.DeviceDefault.Light.DarkActionBar" />
+</resources>
