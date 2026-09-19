@@ -20,28 +20,39 @@ data class DmMessage(
      * How many messages from this conversation have collapsed into this row
      * since it was last cleared. 1 means a single message.
      */
-    val count: Int = 1
+    val count: Int = 1,
+    /**
+     * Which of the logged-in Instagram accounts received this, when the
+     * notification says. Null when it does not, which is the single-account
+     * case.
+     */
+    val account: String? = null
 ) {
     fun toJson(): JSONObject = JSONObject()
         .put(KEY_SENDER, sender)
         .put(KEY_PREVIEW, preview)
         .put(KEY_POSTED_AT, postedAt)
         .put(KEY_COUNT, count)
+        .put(KEY_ACCOUNT, account ?: "")
 
     /**
      * Identity of the conversation this belongs to.
      *
      * Instagram gives us no thread id, so the sender name is the only handle
      * available. Normalised so that casing or stray whitespace in the
-     * notification title does not split one conversation into two rows.
+     * notification title does not split one conversation into two rows, and
+     * scoped by account so the same person messaging two logged-in accounts
+     * stays two conversations.
      */
-    fun conversationKey(): String = sender.trim().lowercase()
+    fun conversationKey(): String =
+        (account?.trim()?.lowercase() ?: "") + "\u0000" + sender.trim().lowercase()
 
     companion object {
         private const val KEY_SENDER = "sender"
         private const val KEY_PREVIEW = "preview"
         private const val KEY_POSTED_AT = "postedAt"
         private const val KEY_COUNT = "count"
+        private const val KEY_ACCOUNT = "account"
 
         fun fromJson(json: JSONObject): DmMessage? {
             val sender = json.optString(KEY_SENDER)
@@ -51,7 +62,8 @@ data class DmMessage(
                 sender = sender,
                 preview = preview,
                 postedAt = json.optLong(KEY_POSTED_AT, 0L),
-                count = json.optInt(KEY_COUNT, 1).coerceAtLeast(1)
+                count = json.optInt(KEY_COUNT, 1).coerceAtLeast(1),
+                account = json.optString(KEY_ACCOUNT).takeIf { it.isNotEmpty() }
             )
         }
     }

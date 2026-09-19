@@ -65,8 +65,18 @@ class DmNotificationListener : NotificationListenerService() {
         } else {
             val outcome = DmNotificationFilter.inspect(sbn)
             DmDiagnostics.record(this, sbn, outcome)
-            outcome is DmNotificationFilter.Outcome.Accepted &&
+            if (outcome !is DmNotificationFilter.Outcome.Accepted) {
+                false
+            } else {
+                // Instagram's own intent knows which logged-in account this
+                // arrived on and which thread it belongs to, which nothing we
+                // could build does.
+                NotificationIntents.remember(
+                    outcome.message.conversationKey(),
+                    sbn.notification?.contentIntent
+                )
                 DmStore.add(this, outcome.message)
+            }
         }
     } catch (e: Exception) {
         // A malformed notification from another app must never take the

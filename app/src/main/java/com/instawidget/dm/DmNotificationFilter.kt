@@ -38,6 +38,7 @@ object DmNotificationFilter {
     private const val EXTRA_TEXT_LINES = "android.textLines"
     private const val EXTRA_SUMMARY_TEXT = "android.summaryText"
     private const val EXTRA_CONVERSATION_TITLE = "android.conversationTitle"
+    private const val EXTRA_SUB_TEXT = "android.subText"
     private const val MESSAGE_KEY_TEXT = "text"
     private const val MESSAGE_KEY_SENDER = "sender"
 
@@ -132,7 +133,10 @@ object DmNotificationFilter {
             DmMessage(
                 sender = sender?.takeIf { it.isNotEmpty() } ?: "Instagram",
                 preview = text,
-                postedAt = if (sbn.postTime > 0L) sbn.postTime else System.currentTimeMillis()
+                postedAt = if (sbn.postTime > 0L) sbn.postTime else System.currentTimeMillis(),
+                // With several accounts logged in, Instagram names the
+                // receiving one in the sub-text. Absent for a single account.
+                account = extras.string(EXTRA_SUB_TEXT)?.takeIf { it.isNotEmpty() }
             )
         )
     }

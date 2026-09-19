@@ -154,6 +154,29 @@ opened the inbox from the widget. Two things make that count honest:
 `tools/grouping-check.py` ports those merge rules to Python and asserts them
 against the awkward cases, since the real ones cannot run off-device.
 
+## Multiple Instagram accounts
+
+With several accounts logged in, a link cannot say which one to open —
+Instagram publishes no deep link that names an account, so any URL lands on
+whichever account was last active, regardless of who the message was for.
+
+So the widget does not build a link when it does not have to. Every DM
+notification carries a `contentIntent` that Instagram built itself, which
+already knows both the receiving account and the thread. `NotificationIntents`
+keeps those handles, keyed by conversation, and a row tap fires the one
+belonging to that row.
+
+The handles are memory-only, because a `PendingIntent` is a live reference
+into another process rather than something that can be written to disk. They
+last as long as this process does, and the listener refills the map from
+whatever is still in the notification shade every time it reconnects. When
+there is no live handle, or Instagram has cancelled it, the tap falls back to
+the link below.
+
+Conversation keys are scoped by account for the same reason, so one person
+messaging two logged-in accounts stays two rows. Where the cache holds DMs for
+more than one account, each row is labelled with the account that received it.
+
 ## Opening the exact conversation
 
 Off by default, behind **Open the exact conversation** on the setup screen.

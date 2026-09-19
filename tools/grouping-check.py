@@ -11,7 +11,10 @@ they are pure. Keep this in step with DmStore.kt when those rules change.
 """
 MAX = 25
 
-def key(m): return m["sender"].strip().lower()
+def key(m):
+    # Scoped by account: the same person messaging two logged-in Instagram
+    # accounts is two conversations, not one.
+    return (m.get("account") or "").strip().lower() + "\0" + m["sender"].strip().lower()
 
 def add(cur, msg):
     k = key(msg)
@@ -36,7 +39,8 @@ def reset(cur):
     if not any(e["count"] > 1 for e in cur): return cur, False
     return [dict(e, count=1) for e in cur], True
 
-def m(s, p, t, c=1): return {"sender": s, "preview": p, "postedAt": t, "count": c}
+def m(s, p, t, c=1, account=None):
+    return {"sender": s, "preview": p, "postedAt": t, "count": c, "account": account}
 
 def show(label, cur):
     print(f"{label}:")
@@ -77,5 +81,16 @@ assert changed and all(e["count"] == 1 for e in cur)
 assert cur[0]["preview"] == "new one"
 _, changed = reset(cur)
 assert not changed, "reset must be idempotent"
+
+# The same sender writing to two different logged-in accounts.
+cur = []
+for msg in [m("priya", "hi there", 100, account="work.acct"),
+            m("priya", "and again", 200, account="work.acct"),
+            m("priya", "different account", 300, account="personal.acct")]:
+    cur, _ = add(cur, msg)
+show("Same sender, two accounts", cur)
+assert len(cur) == 2, "accounts must not be merged into one row"
+assert cur[0]["account"] == "personal.acct" and cur[0]["count"] == 1
+assert cur[1]["account"] == "work.acct" and cur[1]["count"] == 2
 
 print("all grouping assertions passed")

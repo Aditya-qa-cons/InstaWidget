@@ -19,6 +19,12 @@ private class DmRemoteViewsFactory(
 
     private var messages: List<DmMessage> = emptyList()
 
+    /**
+     * Whether the cache holds DMs for more than one Instagram account. With
+     * one account the label would be the same on every row, so it is hidden.
+     */
+    private var showAccounts: Boolean = false
+
     override fun onCreate() = Unit
 
     /**
@@ -27,10 +33,12 @@ private class DmRemoteViewsFactory(
      */
     override fun onDataSetChanged() {
         messages = DmStore.load(context)
+        showAccounts = messages.mapNotNull { it.account }.distinct().size > 1
     }
 
     override fun onDestroy() {
         messages = emptyList()
+        showAccounts = false
     }
 
     override fun getCount(): Int = messages.size
@@ -42,6 +50,14 @@ private class DmRemoteViewsFactory(
         views.setTextViewText(R.id.row_sender, message.sender)
         views.setTextViewText(R.id.row_preview, message.preview)
         views.setTextViewText(R.id.row_time, relativeTime(message.postedAt))
+
+        val account = message.account
+        if (showAccounts && !account.isNullOrEmpty()) {
+            views.setViewVisibility(R.id.row_account, View.VISIBLE)
+            views.setTextViewText(R.id.row_account, context.getString(R.string.row_account, account))
+        } else {
+            views.setViewVisibility(R.id.row_account, View.GONE)
+        }
 
         // The badge counts messages folded into this row since the user last
         // opened the inbox from the widget, so a single message shows nothing.
@@ -57,7 +73,9 @@ private class DmRemoteViewsFactory(
         // conversation when that option is on.
         views.setOnClickFillInIntent(
             R.id.row_root,
-            Intent().putExtra(OpenInboxActivity.EXTRA_SENDER, message.sender)
+            Intent()
+                .putExtra(OpenInboxActivity.EXTRA_SENDER, message.sender)
+                .putExtra(OpenInboxActivity.EXTRA_CONVERSATION, message.conversationKey())
         )
         return views
     }

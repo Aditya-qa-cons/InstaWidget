@@ -1,8 +1,10 @@
 package com.instawidget.dm
 
 import android.app.Activity
+import android.app.PendingIntent
 import android.content.ActivityNotFoundException
 import android.os.Bundle
+import android.util.Log
 import android.widget.Toast
 
 /**
@@ -25,18 +27,24 @@ class OpenInboxActivity : Activity() {
         // Open Instagram first. Clearing counts is the nice-to-have; landing
         // in the inbox is the thing the user asked for, so it must not be
         // able to fail because of bookkeeping.
-        // A row passes its sender; the header and empty state pass nothing.
-        // threadIntent returns null unless the feature is on and the sender
-        // is a usable handle, so this falls back to the inbox by itself.
+        // A row passes its conversation; the header and empty state pass
+        // nothing and just want the inbox.
+        val conversationKey = intent?.getStringExtra(EXTRA_CONVERSATION)
         val sender = intent?.getStringExtra(EXTRA_SENDER)
-        val target = Instagram.threadIntent(this, sender) ?: Instagram.inboxIntent(this)
 
-        var opened = true
-        try {
-            startActivity(target)
-        } catch (e: ActivityNotFoundException) {
-            opened = false
-            Toast.makeText(this, R.string.toast_link_unavailable, Toast.LENGTH_LONG).show()
+        var opened = sendNotificationIntent(conversationKey)
+
+        if (!opened) {
+            // No live handle: fall back to a link. threadIntent returns null
+            // unless that option is on and the sender is a usable handle, so
+            // this lands on the inbox by itself.
+            val target = Instagram.threadIntent(this, sender) ?: Instagram.inboxIntent(this)
+            try {
+                startActivity(target)
+                opened = true
+            } catch (e: ActivityNotFoundException) {
+                Toast.makeText(this, R.string.toast_link_unavailable, Toast.LENGTH_LONG).show()
+            }
         }
 
         if (opened) {
@@ -51,7 +59,30 @@ class OpenInboxActivity : Activity() {
         finish()
     }
 
+    /**
+     * Fires the PendingIntent Instagram attached to the notification, which
+     * opens the right account and the right thread.
+     *
+     * @return false when there is nothing to fire or Instagram has cancelled
+     *         it, leaving the caller to fall back to a link.
+     */
+    private fun sendNotificationIntent(conversationKey: String?): Boolean {
+        val key = conversationKey ?: return false
+        val pending = NotificationIntents.get(key) ?: return false
+        return try {
+            pending.send()
+            true
+        } catch (e: PendingIntent.CanceledException) {
+            // Instagram dropped it, usually with the notification itself.
+            Log.i(TAG, "Notification intent for this conversation is gone")
+            NotificationIntents.forget(key)
+            false
+        }
+    }
+
     companion object {
+        private const val TAG = "OpenInboxActivity"
         const val EXTRA_SENDER = "com.instawidget.dm.extra.SENDER"
+        const val EXTRA_CONVERSATION = "com.instawidget.dm.extra.CONVERSATION"
     }
 }

@@ -153,6 +153,9 @@ object DmDiagnostics {
             .append(p.getInt(KEY_INSTAGRAM_SEEN, 0))
             .append(" from Instagram\n")
         builder.append("Cached DMs: ").append(DmStore.load(context).size).append('\n')
+        builder.append("Live notification intents: ")
+            .append(NotificationIntents.size())
+            .append(" (these open the right Instagram account)\n")
 
         val entries = load(context)
         if (entries.isEmpty()) {

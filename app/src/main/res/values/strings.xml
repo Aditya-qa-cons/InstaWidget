@@ -9,6 +9,7 @@
     <string name="widget_empty_title">All quiet \u2728</string>
     <string name="widget_empty_body">New Instagram DMs land here</string>
     <string name="row_avatar_description">Sender</string>
+    <string name="row_account">to %1$s</string>
 
     <string name="setup_headline">IG DM Widget</string>
     <string name="setup_tagline">Your latest Instagram DMs, right on the home screen \u2728</string>
