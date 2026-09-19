@@ -299,6 +299,31 @@ adb uninstall com.instawidget.dm && tools/install.sh
 
 Upgrades after that are ordinary in-place installs.
 
+## Play Protect
+
+A release build clears the two things Play Protect reliably objects to in a
+sideloaded APK: it is not `android:debuggable`, and it is not signed with the
+shared `CN=Android Debug` identity. What it cannot clear is Play Protect
+declining to install an app from an unregistered developer at all, which newer
+Android builds do.
+
+The two cases look different on the phone, and that is how to tell them apart:
+
+* **A prompt offering to scan, or a warning with "install anyway"** — a scan
+  verdict on an app it has not seen before. Accept the scan, or use
+  `tools/install.sh`; `adb install` does not go through the same prompt.
+* **Blocked outright, with no way to proceed** — a policy decision, not a
+  verdict on the code. Nothing about the APK changes this. Try
+  `NO_VERIFY=1 tools/install.sh`, which turns off Play Protect's check on adb
+  installs for that run and restores it afterwards. If that is refused too,
+  the device requires apps to come from a registered developer and the only
+  routes left are registering as one or installing on a device without that
+  requirement.
+
+Turning off "Scan apps with Play Protect" in the Play Store also works, but it
+disables scanning for everything on the phone, and re-enabling it later can
+flag the app again.
+
 ## Installing and upgrading
 
 Run this **on a computer**, with the phone connected by USB and USB debugging

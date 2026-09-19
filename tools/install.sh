@@ -19,6 +19,8 @@
 # hands-free even if the platform does reset them.
 #
 #   tools/install.sh [path/to/app-release.apk]
+#   NO_VERIFY=1 tools/install.sh        # also turn off Play Protect's adb
+#                                       # install check for this run
 #
 set -euo pipefail
 
@@ -36,9 +38,39 @@ if [[ -z "$(adb devices | awk 'NR>1 && $2=="device"')" ]]; then
     exit 1
 fi
 
+# Play Protect verifies adb installs too on some builds. --no-verify turns
+# that off for the duration of this run and puts it back afterwards, for the
+# case where the handset blocks the install outright with no "install anyway".
+RESTORE_VERIFIER=""
+if [[ "${NO_VERIFY:-0}" == 1 ]]; then
+    previous="$(adb shell settings get global verifier_verify_adb_installs 2>/dev/null | tr -d '\r')"
+    [[ "$previous" == "null" || -z "$previous" ]] && previous=1
+    echo "==> Disabling adb install verification for this run"
+    adb shell settings put global verifier_verify_adb_installs 0 >/dev/null 2>&1 \
+        && RESTORE_VERIFIER="$previous"
+fi
+restore_verifier() {
+    if [[ -n "$RESTORE_VERIFIER" ]]; then
+        adb shell settings put global verifier_verify_adb_installs "$RESTORE_VERIFIER" >/dev/null 2>&1 || true
+        RESTORE_VERIFIER=""
+    fi
+}
+trap restore_verifier EXIT
+
 echo "==> Installing $APK"
 if ! output="$(adb install -r "$APK" 2>&1)"; then
     echo "$output"
+    if grep -qi "verification\|play protect\|INSTALL_FAILED_VERIFICATION" <<<"$output"; then
+        cat <<'MSG'
+
+Play Protect refused this install. Retry with verification off for the run:
+
+    NO_VERIFY=1 tools/install.sh
+
+If that is refused too, the block is a device policy rather than a scan
+verdict, and no change to the APK will get past it.
+MSG
+    fi
     if grep -q "INSTALL_FAILED_UPDATE_INCOMPATIBLE\|signatures do not match" <<<"$output"; then
         cat <<'MSG'
 
