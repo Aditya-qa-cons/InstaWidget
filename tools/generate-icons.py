@@ -135,11 +135,11 @@ def preview(scale):
 
     # Rows.
     y = pad + ph + int(6 * scale)
-    rows = [("priya.desai", "2m", "are you coming tonight?"),
-            ("marco_v", "18m", "sent you a photo"),
-            ("aisha.k", "1h", "haha that reel is so accurate")]
+    rows = [("priya.desai", "2m", "are you coming tonight?", 3),
+            ("marco_v", "18m", "sent you a photo", 1),
+            ("aisha.k", "1h", "haha that reel is so accurate", 1)]
     rh = int(46 * scale)
-    for i, (name, when, text) in enumerate(rows):
+    for i, (name, when, text, count) in enumerate(rows):
         d.rounded_rectangle((pad, y, w - pad, y + rh), radius=int(16 * scale),
                             fill=(131, 58, 180, 10))
         cy = y + rh // 2
@@ -150,8 +150,20 @@ def preview(scale):
         d.text((tx, cy - int(15 * scale)), name, font=font(SANS_BOLD, int(13 * scale)),
                fill=(31, 27, 36))
         wf = font(SANS, int(11 * scale))
-        d.text((w - pad - int(12 * scale) - d.textlength(when, font=wf), cy - int(14 * scale)),
-               when, font=wf, fill=(154, 147, 163))
+        wx = w - pad - int(12 * scale) - d.textlength(when, font=wf)
+        d.text((wx, cy - int(14 * scale)), when, font=wf, fill=(154, 147, 163))
+        if count > 1:
+            # Unread-style pill, matching count_badge.xml.
+            bf = font(SANS_BOLD, int(10 * scale))
+            label = str(count)
+            bw = max(d.textlength(label, font=bf) + int(10 * scale), int(18 * scale))
+            bh = int(15 * scale)
+            bx = wx - int(8 * scale) - bw
+            by = cy - int(15 * scale)
+            d.rounded_rectangle((bx, by, bx + bw, by + bh), radius=int(9 * scale),
+                                fill=(193, 53, 132))
+            d.text((bx + (bw - d.textlength(label, font=bf)) / 2, by + int(1.5 * scale)),
+                   label, font=bf, fill="white")
         d.text((tx, cy + int(1 * scale)), text, font=font(SANS, int(12 * scale)),
                fill=(85, 78, 94))
         y += rh + int(5 * scale)

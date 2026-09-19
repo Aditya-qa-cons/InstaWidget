@@ -129,6 +129,31 @@ three questions that look identical from the outside:
   `channel`, whether MessagingStyle messages were present), which is enough to
   fix the rule in `DmNotificationFilter`.
 
+## One row per conversation
+
+The widget behaves like an inbox: `DmStore.add` folds each DM into its
+conversation, keyed on the normalised sender name, and moves that conversation
+to the top. Instagram exposes no thread id in a notification, so the sender
+name is the only handle available.
+
+A badge shows how many messages have folded into a row since the user last
+opened the inbox from the widget. Two things make that count honest:
+
+* A MessagingStyle notification is re-posted every time the conversation
+  changes, so the same newest message arrives repeatedly. Identical preview
+  text is treated as the same message, refreshing the timestamp without
+  inflating the count.
+* Tapping the widget goes through `OpenInboxActivity`, an invisible activity
+  that opens Instagram and then resets the counts, on the grounds that the
+  user has now seen what was waiting. It exists because a broadcast receiver
+  cannot reliably start an activity from the background, whereas this is the
+  foreground activity for the instant it lives. It opens Instagram first and
+  treats the bookkeeping as best-effort, so a tap can never fail because of
+  it.
+
+`tools/grouping-check.py` ports those merge rules to Python and asserts them
+against the awkward cases, since the real ones cannot run off-device.
+
 ## Known limitation: no per-thread deep link
 
 Instagram has **no public deep link to a specific conversation**, so every row

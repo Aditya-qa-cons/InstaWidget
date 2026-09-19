@@ -76,12 +76,21 @@ class DmWidgetProvider : AppWidgetProvider() {
         return views
     }
 
+    /**
+     * Taps go via [OpenInboxActivity] rather than straight at Instagram, so
+     * the widget knows the user has gone to read their DMs and can drop the
+     * new-message counts. That activity draws nothing.
+     */
     private fun inboxPendingIntent(context: Context): PendingIntent = PendingIntent.getActivity(
         context,
         REQUEST_INBOX,
-        Instagram.inboxIntent(context),
+        openInboxIntent(context),
         PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
     )
+
+    private fun openInboxIntent(context: Context): Intent =
+        Intent(context, OpenInboxActivity::class.java)
+            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
 
     /**
      * Template behind the list rows.
@@ -100,7 +109,7 @@ class DmWidgetProvider : AppWidgetProvider() {
         return PendingIntent.getActivity(
             context,
             REQUEST_INBOX_TEMPLATE,
-            Instagram.inboxIntent(context),
+            openInboxIntent(context),
             flags
         )
     }

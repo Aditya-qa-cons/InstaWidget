@@ -53,6 +53,18 @@
         </activity>
 
         <!--
+          Invisible: opens Instagram and finishes. NoDisplay draws nothing,
+          noHistory and excludeFromRecents keep it out of the task switcher.
+        -->
+        <activity
+            android:name=".OpenInboxActivity"
+            android:excludeFromRecents="true"
+            android:exported="false"
+            android:noHistory="true"
+            android:taskAffinity=""
+            android:theme="@android:style/Theme.NoDisplay" />
+
+        <!--
           Reads Instagram's own DM notifications. The system binds this, which is
           why it is exported and guarded by the signature-level bind permission.
         -->

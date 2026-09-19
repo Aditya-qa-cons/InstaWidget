@@ -3,6 +3,7 @@ package com.instawidget.dm
 import android.content.Context
 import android.content.Intent
 import android.text.format.DateUtils
+import android.view.View
 import android.widget.RemoteViews
 import android.widget.RemoteViewsService
 
@@ -42,6 +43,15 @@ private class DmRemoteViewsFactory(
         views.setTextViewText(R.id.row_preview, message.preview)
         views.setTextViewText(R.id.row_time, relativeTime(message.postedAt))
 
+        // The badge counts messages folded into this row since the user last
+        // opened the inbox from the widget, so a single message shows nothing.
+        if (message.count > 1) {
+            views.setViewVisibility(R.id.row_count, View.VISIBLE)
+            views.setTextViewText(R.id.row_count, formatCount(message.count))
+        } else {
+            views.setViewVisibility(R.id.row_count, View.GONE)
+        }
+
         // The template PendingIntent lives on the provider; rows only need to
         // opt in. There is no per-thread deep link to pass along, so the
         // fill-in intent carries nothing but the click itself.
@@ -54,9 +64,11 @@ private class DmRemoteViewsFactory(
     override fun getViewTypeCount(): Int = 1
 
     override fun getItemId(position: Int): Long =
-        messages.getOrNull(position)?.dedupeKey()?.hashCode()?.toLong() ?: position.toLong()
+        messages.getOrNull(position)?.conversationKey()?.hashCode()?.toLong() ?: position.toLong()
 
     override fun hasStableIds(): Boolean = true
+
+    private fun formatCount(count: Int): String = if (count > 9) "9+" else count.toString()
 
     private fun relativeTime(postedAt: Long): CharSequence {
         if (postedAt <= 0L) return ""
