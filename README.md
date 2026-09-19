@@ -344,8 +344,23 @@ Two ways past it, and the first needs no registration at all:
    but confirm in the console before counting on it for a phone signed in as
    someone else.
 
-Check the current terms before relying on either; this is a policy that has
-been moving. https://developer.android.com/developer-verification
+Registration links:
+
+* Sign up (either account type): https://android.google.com/developerconsole/developers
+* Limited distribution guide: https://developer.android.com/developer-verification/guides/limited-distribution
+* Getting started: https://support.google.com/android-developer-console/answer/16604405
+
+Registration is likely to want this build's signing certificate, which comes
+from the keystore, not the APK:
+
+```bash
+keytool -list -v -keystore keystore/release.keystore \
+    -storepass "$(cat keystore/release.password)" -alias instawidget
+```
+
+Check the current terms before relying on any of this; the policy has been
+moving, and some of Google's pages still carry early-access wording from
+before the tier opened.
 
 Turning off "Scan apps with Play Protect" in the Play Store also works, but it
 disables scanning for everything on the phone, and re-enabling it later can
