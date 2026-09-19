@@ -20,138 +20,127 @@
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
+            android:layout_marginTop="12dp"
             android:lineSpacingMultiplier="1.15"
             android:text="@string/setup_explainer"
             android:textSize="15sp" />
 
+        <!-- Step 1: notification access -->
         <TextView
+            android:id="@+id/step_access_status"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:lineSpacingMultiplier="1.15"
-            android:text="@string/setup_privacy"
-            android:textSize="15sp" />
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:lineSpacingMultiplier="1.15"
-            android:text="@string/setup_limitation"
-            android:textSize="15sp" />
-
-        <TextView
-            android:id="@+id/setup_status"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="24dp"
-            android:textSize="15sp"
+            android:layout_marginTop="28dp"
+            android:textSize="16sp"
             android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/step_access_hint"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:lineSpacingMultiplier="1.15"
+            android:textSize="14sp" />
 
         <Button
-            android:id="@+id/setup_grant_button"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
-            android:text="@string/button_grant_access" />
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="24dp"
-            android:text="@string/setup_restricted_title"
-            android:textSize="15sp"
-            android:textStyle="bold" />
-
-        <TextView
+            android:id="@+id/step_access_button"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
-            android:lineSpacingMultiplier="1.15"
-            android:text="@string/setup_restricted_body"
-            android:textSize="15sp" />
+            android:text="@string/button_grant_access" />
 
         <Button
-            android:id="@+id/setup_restricted_button"
+            android:id="@+id/step_restricted_button"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
+            android:layout_marginTop="8dp"
             android:text="@string/button_app_info" />
 
+        <!-- Step 2: the reader is actually running -->
         <TextView
+            android:id="@+id/step_reader_status"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="24dp"
-            android:lineSpacingMultiplier="1.15"
-            android:text="@string/setup_add_widget"
-            android:textSize="15sp" />
+            android:textSize="16sp"
+            android:textStyle="bold" />
 
         <TextView
-            android:id="@+id/setup_widget_status"
+            android:id="@+id/step_reader_hint"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
-            android:textSize="15sp"
-            android:textStyle="bold" />
+            android:layout_marginTop="4dp"
+            android:lineSpacingMultiplier="1.15"
+            android:textSize="14sp" />
 
         <Button
-            android:id="@+id/setup_add_widget_button"
+            android:id="@+id/step_reader_button"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
-            android:text="@string/button_add_widget" />
+            android:layout_marginTop="8dp"
+            android:text="@string/button_rebind" />
+
+        <!-- Step 3: widget on the home screen -->
+        <TextView
+            android:id="@+id/step_widget_status"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:textSize="16sp"
+            android:textStyle="bold" />
 
         <TextView
+            android:id="@+id/step_widget_hint"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="32dp"
-            android:text="@string/setup_links_title"
-            android:textSize="18sp"
+            android:layout_marginTop="4dp"
+            android:lineSpacingMultiplier="1.15"
+            android:textSize="14sp" />
+
+        <Button
+            android:id="@+id/step_widget_button"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="@string/button_add_widget" />
+
+        <!-- Step 4: the inbox link, auto-chosen but overridable -->
+        <TextView
+            android:id="@+id/step_link_status"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:textSize="16sp"
             android:textStyle="bold" />
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="6dp"
+            android:layout_marginTop="4dp"
             android:lineSpacingMultiplier="1.15"
             android:text="@string/setup_links_hint"
             android:textSize="14sp" />
+
+        <Button
+            android:id="@+id/setup_links_toggle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="@string/button_show_links" />
 
         <LinearLayout
             android:id="@+id/setup_links_container"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:orientation="vertical" />
+            android:layout_marginTop="4dp"
+            android:orientation="vertical"
+            android:visibility="gone" />
 
+        <!-- Diagnostics -->
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="32dp"
-            android:text="@string/setup_rebind_title"
-            android:textSize="18sp"
-            android:textStyle="bold" />
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="6dp"
-            android:lineSpacingMultiplier="1.15"
-            android:text="@string/setup_rebind_hint"
-            android:textSize="14sp" />
-
-        <Button
-            android:id="@+id/setup_rebind_button"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
-            android:text="@string/button_rebind" />
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="32dp"
+            android:layout_marginTop="36dp"
             android:text="@string/setup_diagnostics_title"
             android:textSize="18sp"
             android:textStyle="bold" />
@@ -186,8 +175,24 @@
             android:id="@+id/setup_clear_button"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="24dp"
+            android:layout_marginTop="8dp"
             android:text="@string/button_clear_cache" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:lineSpacingMultiplier="1.15"
+            android:text="@string/setup_privacy"
+            android:textSize="13sp" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:lineSpacingMultiplier="1.15"
+            android:text="@string/setup_limitation"
+            android:textSize="13sp" />
 
     </LinearLayout>
 </ScrollView>

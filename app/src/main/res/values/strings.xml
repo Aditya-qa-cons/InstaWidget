@@ -8,40 +8,53 @@
     <string name="widget_empty">No DMs cached yet.\n\nNew Instagram messages will show up here. Tap the gear to check setup.</string>
 
     <string name="setup_headline">IG DM Widget</string>
-    <string name="setup_explainer">This app puts your most recent Instagram DM previews on your home screen. Tapping the widget opens Instagram\'s direct message inbox.</string>
+    <string name="setup_explainer">Shows your most recent Instagram DM previews on the home screen, by reading the DM notifications Instagram already posts to this phone. Tapping the widget opens Instagram\'s inbox.</string>
+
+    <string name="step_done_prefix">\u2713  %1$s</string>
+    <string name="step_todo_prefix">\u2022  %1$s</string>
+
+    <string name="step_access_done">Notification access granted</string>
+    <string name="step_access_todo">Grant notification access</string>
+    <string name="step_access_hint">This is the one thing Android will not let the app turn on for you. If the switch is greyed out behind \"Restricted setting\", open the app info page, tap the three-dot menu top-right, and choose \"Allow restricted settings\" first.</string>
+
+    <string name="step_reader_done">Notification reader running</string>
+    <string name="step_reader_todo">Notification reader not running yet</string>
+    <string name="step_reader_hint">Android sometimes drops the reader after an app update, and some phones kill it to save battery. The app asks for it back automatically; tap below to retry now. If it will not stay connected, turn notification access off and on again, and on Xiaomi enable Autostart and set battery saver to No restrictions.</string>
+    <string name="step_reader_blocked">Waiting on notification access above.</string>
+
+    <string name="step_widget_done">Widget is on your home screen</string>
+    <string name="step_widget_todo">Add the widget to your home screen</string>
+    <string name="step_widget_hint">This asks your launcher to place it directly, which works even where the launcher\'s own widget list refuses to show third-party apps.</string>
+    <string name="button_add_another_widget">Add another widget</string>
+
+    <string name="step_link_done">Opens: %1$s</string>
+    <string name="step_link_todo">No Instagram link available</string>
+    <string name="setup_links_hint">Chosen automatically. Instagram publishes no supported link to the inbox and the working one differs by app version, so if the widget lands on the home feed instead, try the others and keep whichever opens your DMs.</string>
+    <string name="button_show_links">Change Instagram link</string>
+    <string name="button_hide_links">Hide</string>
+
     <string name="setup_privacy">It works by reading the DM notifications Instagram already posts to this phone, and caching the last few on the device. There is no login, no Instagram API, and no INTERNET permission — nothing is ever sent anywhere.</string>
     <string name="setup_limitation">Instagram has no public deep link to an individual conversation, so tapping any row opens the general inbox rather than that specific thread.</string>
-    <string name="setup_restricted_title">Seeing \"Restricted setting\"?</string>
-    <string name="setup_restricted_body">Android 13 and newer block notification access for apps installed from an APK file instead of an app store. To clear it: open this app\'s info page, tap the three-dot menu in the top-right corner, and choose \"Allow restricted settings\". Then come back and grant notification access.</string>
     <string name="button_app_info">Open this app\'s info page</string>
 
-    <string name="setup_add_widget">Add the widget with the button below. That asks your launcher to place it directly, which works even on launchers whose widget picker refuses to list third-party apps (Xiaomi\'s, notably). Long-pressing the home screen and choosing Widgets works too, where the picker lists it.</string>
     <string name="button_add_widget">Add widget to home screen</string>
 
-    <string name="widget_status_registered">Widget registered with Android: yes</string>
-    <string name="widget_status_missing">Widget registered with Android: no — reinstall the app</string>
 
     <string name="toast_pin_requested">Asked your launcher to add the widget — confirm on the dialog it shows.</string>
     <string name="toast_pin_unsupported">This launcher does not support adding widgets from an app. Try the launcher\'s own widget picker, or switch launchers.</string>
     <string name="toast_pin_failed">The launcher refused the request. Try its own widget picker instead.</string>
 
-    <string name="status_granted">Notification access: granted</string>
-    <string name="status_missing">Notification access: not granted yet</string>
 
     <string name="button_grant_access">Open notification access settings</string>
     <string name="button_review_access">Review notification access settings</string>
     <string name="button_clear_cache">Clear cached messages</string>
 
-    <string name="setup_links_title">Which link opens your DM inbox?</string>
-    <string name="setup_links_hint">Instagram publishes no supported deep link to the inbox, and which of these works depends on your Instagram version. Tap Try on each until one lands on your DMs rather than the home feed, then tap Use so the widget uses it.</string>
     <string name="button_try_link">Try</string>
     <string name="button_use_link">Use</string>
     <string name="link_selected">%1$s  (in use)</string>
     <string name="toast_link_selected">Widget will now open: %1$s</string>
     <string name="toast_link_unavailable">Nothing on this phone can open that link.</string>
 
-    <string name="setup_rebind_title">Notification reader not running?</string>
-    <string name="setup_rebind_hint">If the diagnostics below say the listener never connected while access is granted, the binding was lost — usually to an app update or a battery manager. This asks Android to reconnect it. If it stays disconnected, turn notification access off and back on, and on Xiaomi enable Autostart and set battery saver to No restrictions.</string>
     <string name="button_rebind">Reconnect notification reader</string>
     <string name="toast_rebind_requested">Asked Android to reconnect the reader. Pull down to refresh this screen in a moment.</string>
     <string name="toast_rebind_failed">Android refused the reconnect request. Check notification access.</string>

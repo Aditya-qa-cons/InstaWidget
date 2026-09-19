@@ -25,10 +25,32 @@ DmStore (SharedPreferences, JSON, on-device only)
 DmWidgetService / DmRemoteViewsFactory  -->  ListView inside DmWidgetProvider
 ```
 
-The app declares **no permissions at all**. In particular there is no
-`INTERNET` permission, because nothing is ever sent anywhere. Notification
-access is a special access the user grants by hand in Settings; it cannot be
-requested programmatically, which is what `SetupActivity` exists for.
+The app declares **one permission**: `RECEIVE_BOOT_COMPLETED`, and only so it
+can ask the system to rebind the notification listener after a restart, which
+several OEM builds otherwise leave dead. There is deliberately no `INTERNET`
+permission, because nothing is ever sent anywhere.
+
+Notification access is a special access the user grants by hand in Settings; it
+cannot be requested programmatically, which is what `SetupActivity` exists for.
+
+## Setup, and what cannot be automated
+
+`SetupActivity` is a checklist that re-evaluates on every resume:
+
+1. **Notification access** — manual, and unavoidably so. Android has no API to
+   request it.
+2. **Notification reader running** — repaired automatically. Granted access
+   does not guarantee a live binding; app updates drop it and OEM battery
+   managers kill it. `NotificationListenerService.requestRebind()` is called
+   from `onListenerDisconnected`, on `BOOT_COMPLETED` and `MY_PACKAGE_REPLACED`,
+   from the widget's `onUpdate`, and on resuming the setup screen.
+3. **Widget on the home screen** — one button, via `requestPinAppWidget`.
+4. **Instagram inbox link** — chosen automatically on first run from the first
+   candidate that resolves; only needs attention if the widget lands on the
+   home feed.
+
+So a clean install is: open the app, grant notification access, tap "Add widget
+to home screen". Everything else settles by itself.
 
 ## Source layout
 

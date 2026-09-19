@@ -42,6 +42,13 @@ object WidgetPinner {
         }
     }
 
+    /** Whether at least one instance of the widget is on a home screen. */
+    fun isWidgetPlaced(context: Context): Boolean {
+        val manager = AppWidgetManager.getInstance(context) ?: return false
+        val component = ComponentName(context, DmWidgetProvider::class.java)
+        return manager.getAppWidgetIds(component).isNotEmpty()
+    }
+
     /**
      * Whether the framework has registered our provider at all.
      *

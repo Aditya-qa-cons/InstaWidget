@@ -10,7 +10,14 @@
         it is not something the app requests.
       * The user grants notification access manually from
         Settings > Notification access (see SetupActivity).
+
+      RECEIVE_BOOT_COMPLETED is the one permission the app does ask for. It is
+      not for doing work at boot: it only lets the app ask the system to
+      rebind the notification listener, which several OEM builds otherwise
+      leave dead after a restart, freezing the widget until the app is opened
+      by hand. It grants no access to data and still makes no network calls.
     -->
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 
     <!--
       Instagram has to be declared visible. From targetSdk 30 the platform
@@ -73,6 +80,15 @@
           the widget invisible in the picker. Nothing sensitive is reachable
           this way: the receiver only redraws the widget from the local cache.
         -->
+        <receiver
+            android:name=".BootReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
+            </intent-filter>
+        </receiver>
+
         <receiver
             android:name=".DmWidgetProvider"
             android:exported="true"

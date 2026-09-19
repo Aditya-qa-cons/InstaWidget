@@ -18,6 +18,15 @@ class DmWidgetProvider : AppWidgetProvider() {
         appWidgetManager: AppWidgetManager,
         appWidgetIds: IntArray
     ) {
+        // Cheap opportunistic repair: if access is granted but the reader has
+        // never run, the binding was lost and the widget would sit empty
+        // forever. No-op once the listener is alive.
+        if (Instagram.isNotificationAccessGranted(context) &&
+            !DmDiagnostics.hasEverConnected(context)
+        ) {
+            ListenerControl.requestRebind(context)
+        }
+
         for (appWidgetId in appWidgetIds) {
             appWidgetManager.updateAppWidget(appWidgetId, buildViews(context, appWidgetId))
         }

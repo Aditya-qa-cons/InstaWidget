@@ -32,6 +32,17 @@ class DmNotificationListener : NotificationListenerService() {
         if (changed) DmWidgetProvider.refreshAll(this)
     }
 
+    /**
+     * The system drops the binding on app updates, low memory and whenever an
+     * OEM battery manager feels like it, and does not always bring it back.
+     * Asking for a rebind here is the documented way to recover, and is what
+     * keeps the widget working without the user visiting the setup screen.
+     */
+    override fun onListenerDisconnected() {
+        super.onListenerDisconnected()
+        ListenerControl.requestRebind(this)
+    }
+
     override fun onNotificationPosted(sbn: StatusBarNotification?) {
         val notification = sbn ?: return
         if (handle(notification)) {

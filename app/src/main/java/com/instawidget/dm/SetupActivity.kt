@@ -14,19 +14,34 @@ import android.widget.TextView
 import android.widget.Toast
 
 /**
- * One screen: what the app does, whether notification access is on, and a
- * button that opens the Settings page where the user turns it on.
+ * The whole setup flow, as a checklist that re-evaluates itself every time the
+ * screen is shown.
  *
- * Notification access cannot be granted programmatically, so this screen is the
- * whole onboarding flow.
+ * Notification access cannot be granted programmatically, so some of this is
+ * unavoidably manual. Everything that *can* be automatic is: the inbox link is
+ * chosen on first run, and a lost listener binding is repaired on resume
+ * rather than being reported as a problem for the user to solve.
  */
 class SetupActivity : Activity() {
 
-    private lateinit var statusView: TextView
-    private lateinit var grantButton: Button
-    private lateinit var widgetStatusView: TextView
-    private lateinit var diagnosticsView: TextView
+    private lateinit var accessStatus: TextView
+    private lateinit var accessHint: TextView
+    private lateinit var accessButton: Button
+    private lateinit var restrictedButton: Button
+
+    private lateinit var readerStatus: TextView
+    private lateinit var readerHint: TextView
+    private lateinit var readerButton: Button
+
+    private lateinit var widgetStatus: TextView
+    private lateinit var widgetHint: TextView
+    private lateinit var widgetButton: Button
+
+    private lateinit var linkStatus: TextView
+    private lateinit var linksToggle: Button
     private lateinit var linksContainer: LinearLayout
+
+    private lateinit var diagnosticsView: TextView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -35,40 +50,144 @@ class SetupActivity : Activity() {
         // Explicit casts rather than the generic findViewById<T>: that
         // overload only exists from API 26, and this source is also built
         // against older platform jars by tools/build-apk-offline.sh.
-        statusView = findViewById(R.id.setup_status) as TextView
-        grantButton = findViewById(R.id.setup_grant_button) as Button
-        widgetStatusView = findViewById(R.id.setup_widget_status) as TextView
-        diagnosticsView = findViewById(R.id.setup_diagnostics) as TextView
+        accessStatus = findViewById(R.id.step_access_status) as TextView
+        accessHint = findViewById(R.id.step_access_hint) as TextView
+        accessButton = findViewById(R.id.step_access_button) as Button
+        restrictedButton = findViewById(R.id.step_restricted_button) as Button
+
+        readerStatus = findViewById(R.id.step_reader_status) as TextView
+        readerHint = findViewById(R.id.step_reader_hint) as TextView
+        readerButton = findViewById(R.id.step_reader_button) as Button
+
+        widgetStatus = findViewById(R.id.step_widget_status) as TextView
+        widgetHint = findViewById(R.id.step_widget_hint) as TextView
+        widgetButton = findViewById(R.id.step_widget_button) as Button
+
+        linkStatus = findViewById(R.id.step_link_status) as TextView
+        linksToggle = findViewById(R.id.setup_links_toggle) as Button
         linksContainer = findViewById(R.id.setup_links_container) as LinearLayout
 
-        grantButton.setOnClickListener { openNotificationAccessSettings() }
-        (findViewById(R.id.setup_restricted_button) as View)
-            .setOnClickListener { openAppInfo() }
-        (findViewById(R.id.setup_add_widget_button) as View)
-            .setOnClickListener { pinWidget() }
+        diagnosticsView = findViewById(R.id.setup_diagnostics) as TextView
+
+        accessButton.setOnClickListener { open(Instagram.notificationAccessSettingsIntent()) }
+        restrictedButton.setOnClickListener { open(Instagram.appInfoIntent(this)) }
+        readerButton.setOnClickListener { reconnectListener() }
+        widgetButton.setOnClickListener { pinWidget() }
+        linksToggle.setOnClickListener { toggleLinks() }
+
         (findViewById(R.id.setup_copy_diagnostics_button) as View)
             .setOnClickListener { copyDiagnostics() }
-        (findViewById(R.id.setup_rebind_button) as View)
-            .setOnClickListener { reconnectListener() }
-        (findViewById(R.id.setup_clear_button) as View).setOnClickListener { clearCache() }
+        (findViewById(R.id.setup_clear_button) as View)
+            .setOnClickListener { clearCache() }
     }
 
     override fun onResume() {
         super.onResume()
-        // Re-check on every resume: the user typically comes back here straight
-        // from the Settings screen.
-        val granted = Instagram.isNotificationAccessGranted(this)
-        render(granted)
-        renderWidgetStatus()
-        renderInboxLinks()
 
-        // Access granted but the listener has never run means the binding was
-        // lost, most often to an app update or an OEM battery manager. Ask for
-        // it back before showing the user a report that says "never".
+        // Pick a working inbox link without asking, so a fresh install has
+        // nothing to configure.
+        if (Instagram.selectedLinkId(this) == null) {
+            Instagram.INBOX_LINKS.firstOrNull { it.isAvailable(this) }
+                ?.let { Instagram.selectLink(this, it.id) }
+        }
+
+        val granted = Instagram.isNotificationAccessGranted(this)
+
+        // Access granted but the reader has never run means the binding was
+        // lost, most often to an app update or an OEM battery manager. Repair
+        // it rather than reporting it.
         if (granted && !DmDiagnostics.hasEverConnected(this)) {
             ListenerControl.requestRebind(this)
         }
+
+        renderAccessStep(granted)
+        renderReaderStep(granted)
+        renderWidgetStep()
+        renderLinkStep()
         diagnosticsView.text = DmDiagnostics.report(this)
+    }
+
+    // --- steps --------------------------------------------------------------
+
+    private fun renderAccessStep(granted: Boolean) {
+        if (granted) {
+            done(accessStatus, R.string.step_access_done)
+            accessHint.visibility = View.GONE
+            accessButton.setText(R.string.button_review_access)
+            restrictedButton.visibility = View.GONE
+        } else {
+            todo(accessStatus, R.string.step_access_todo)
+            accessHint.visibility = View.VISIBLE
+            accessHint.setText(R.string.step_access_hint)
+            accessButton.setText(R.string.button_grant_access)
+            // Only worth mentioning while the toggle is still off, since this
+            // is what blocks it on a sideloaded build.
+            restrictedButton.visibility = View.VISIBLE
+        }
+    }
+
+    private fun renderReaderStep(granted: Boolean) {
+        val connected = DmDiagnostics.hasEverConnected(this)
+        if (connected) {
+            done(readerStatus, R.string.step_reader_done)
+            readerHint.visibility = View.GONE
+            readerButton.visibility = View.GONE
+        } else {
+            todo(readerStatus, R.string.step_reader_todo)
+            readerHint.visibility = View.VISIBLE
+            readerHint.setText(
+                if (granted) R.string.step_reader_hint else R.string.step_reader_blocked
+            )
+            readerButton.visibility = if (granted) View.VISIBLE else View.GONE
+        }
+    }
+
+    private fun renderWidgetStep() {
+        if (WidgetPinner.isWidgetPlaced(this)) {
+            done(widgetStatus, R.string.step_widget_done)
+            widgetHint.visibility = View.GONE
+            widgetButton.setText(R.string.button_add_another_widget)
+        } else {
+            todo(widgetStatus, R.string.step_widget_todo)
+            widgetHint.visibility = View.VISIBLE
+            widgetHint.setText(R.string.step_widget_hint)
+            widgetButton.setText(R.string.button_add_widget)
+        }
+    }
+
+    private fun renderLinkStep() {
+        val selected = Instagram.selectedLinkId(this)
+        val label = Instagram.INBOX_LINKS.firstOrNull { it.id == selected }?.label
+        if (label != null) {
+            done(linkStatus, getString(R.string.step_link_done, label))
+        } else {
+            todo(linkStatus, getString(R.string.step_link_todo))
+        }
+        renderInboxLinks()
+    }
+
+    private fun done(view: TextView, resId: Int) = done(view, getString(resId))
+
+    private fun done(view: TextView, text: String) {
+        view.text = getString(R.string.step_done_prefix, text)
+        view.setTextColor(getColor(R.color.status_ok))
+    }
+
+    private fun todo(view: TextView, resId: Int) = todo(view, getString(resId))
+
+    private fun todo(view: TextView, text: String) {
+        view.text = getString(R.string.step_todo_prefix, text)
+        view.setTextColor(getColor(R.color.status_warn))
+    }
+
+    // --- actions ------------------------------------------------------------
+
+    private fun open(intent: android.content.Intent) {
+        try {
+            startActivity(intent)
+        } catch (e: ActivityNotFoundException) {
+            Toast.makeText(this, R.string.error_no_settings_screen, Toast.LENGTH_LONG).show()
+        }
     }
 
     private fun reconnectListener() {
@@ -81,10 +200,42 @@ class SetupActivity : Activity() {
         diagnosticsView.text = DmDiagnostics.report(this)
     }
 
-    /**
-     * One row per candidate inbox link. Instagram's behaviour here varies by
-     * app version, so the user picks whichever actually lands on the inbox.
-     */
+    private fun pinWidget() {
+        val message = when (WidgetPinner.pin(this)) {
+            WidgetPinner.Result.REQUESTED -> R.string.toast_pin_requested
+            WidgetPinner.Result.UNSUPPORTED -> R.string.toast_pin_unsupported
+            WidgetPinner.Result.FAILED -> R.string.toast_pin_failed
+        }
+        Toast.makeText(this, message, Toast.LENGTH_LONG).show()
+    }
+
+    private fun toggleLinks() {
+        val showing = linksContainer.visibility == View.VISIBLE
+        linksContainer.visibility = if (showing) View.GONE else View.VISIBLE
+        linksToggle.setText(if (showing) R.string.button_show_links else R.string.button_hide_links)
+    }
+
+    private fun copyDiagnostics() {
+        val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as? ClipboardManager
+        if (clipboard == null) {
+            Toast.makeText(this, R.string.toast_copy_failed, Toast.LENGTH_SHORT).show()
+            return
+        }
+        clipboard.setPrimaryClip(
+            ClipData.newPlainText(getString(R.string.app_name), DmDiagnostics.report(this))
+        )
+        Toast.makeText(this, R.string.toast_copied, Toast.LENGTH_SHORT).show()
+    }
+
+    private fun clearCache() {
+        DmStore.clear(this)
+        DmDiagnostics.clear(this)
+        DmWidgetProvider.refreshAll(this)
+        Toast.makeText(this, R.string.toast_cleared, Toast.LENGTH_SHORT).show()
+    }
+
+    // --- inbox link chooser -------------------------------------------------
+
     private fun renderInboxLinks() {
         linksContainer.removeAllViews()
         val selected = Instagram.selectedLinkId(this)
@@ -100,14 +251,12 @@ class SetupActivity : Activity() {
             setPadding(0, dp(4), 0, dp(4))
         }
 
-        val label = TextView(this).apply {
+        row.addView(TextView(this).apply {
             text = if (isSelected) getString(R.string.link_selected, link.label) else link.label
             textSize = 13f
             isEnabled = link.isAvailable(this@SetupActivity)
             layoutParams = LinearLayout.LayoutParams(0, WRAP, 1f)
-        }
-        row.addView(label)
-
+        })
         row.addView(Button(this).apply {
             setText(R.string.button_try_link)
             setOnClickListener { tryLink(link) }
@@ -130,85 +279,12 @@ class SetupActivity : Activity() {
     private fun useLink(link: Instagram.InboxLink) {
         Instagram.selectLink(this, link.id)
         DmWidgetProvider.refreshAll(this)
-        renderInboxLinks()
+        renderLinkStep()
         Toast.makeText(this, getString(R.string.toast_link_selected, link.label), Toast.LENGTH_SHORT)
             .show()
     }
 
     private fun dp(value: Int): Int = (value * resources.displayMetrics.density).toInt()
-
-    private fun copyDiagnostics() {
-        val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as? ClipboardManager
-        if (clipboard == null) {
-            Toast.makeText(this, R.string.toast_copy_failed, Toast.LENGTH_SHORT).show()
-            return
-        }
-        clipboard.setPrimaryClip(
-            ClipData.newPlainText(getString(R.string.app_name), DmDiagnostics.report(this))
-        )
-        Toast.makeText(this, R.string.toast_copied, Toast.LENGTH_SHORT).show()
-    }
-
-    /**
-     * Reports whether the framework knows about the widget provider. If it
-     * does and the launcher still will not list it, the launcher is at fault
-     * and "Add widget to home screen" is the way around it.
-     */
-    private fun renderWidgetStatus() {
-        val registered = WidgetPinner.isProviderRegistered(this)
-        widgetStatusView.setText(
-            if (registered) R.string.widget_status_registered
-            else R.string.widget_status_missing
-        )
-        widgetStatusView.setTextColor(
-            getColor(if (registered) R.color.status_ok else R.color.status_warn)
-        )
-    }
-
-    private fun pinWidget() {
-        val message = when (WidgetPinner.pin(this)) {
-            WidgetPinner.Result.REQUESTED -> R.string.toast_pin_requested
-            WidgetPinner.Result.UNSUPPORTED -> R.string.toast_pin_unsupported
-            WidgetPinner.Result.FAILED -> R.string.toast_pin_failed
-        }
-        Toast.makeText(this, message, Toast.LENGTH_LONG).show()
-    }
-
-    private fun render(granted: Boolean) {
-        if (granted) {
-            statusView.setText(R.string.status_granted)
-            statusView.setTextColor(getColor(R.color.status_ok))
-            grantButton.setText(R.string.button_review_access)
-        } else {
-            statusView.setText(R.string.status_missing)
-            statusView.setTextColor(getColor(R.color.status_warn))
-            grantButton.setText(R.string.button_grant_access)
-        }
-    }
-
-    private fun openNotificationAccessSettings() {
-        try {
-            startActivity(Instagram.notificationAccessSettingsIntent())
-        } catch (e: ActivityNotFoundException) {
-            // Some heavily skinned builds hide this screen.
-            Toast.makeText(this, R.string.error_no_settings_screen, Toast.LENGTH_LONG).show()
-        }
-    }
-
-    private fun openAppInfo() {
-        try {
-            startActivity(Instagram.appInfoIntent(this))
-        } catch (e: ActivityNotFoundException) {
-            Toast.makeText(this, R.string.error_no_settings_screen, Toast.LENGTH_LONG).show()
-        }
-    }
-
-    private fun clearCache() {
-        DmStore.clear(this)
-        DmDiagnostics.clear(this)
-        DmWidgetProvider.refreshAll(this)
-        Toast.makeText(this, R.string.toast_cleared, Toast.LENGTH_SHORT).show()
-    }
 
     private companion object {
         const val WRAP = LinearLayout.LayoutParams.WRAP_CONTENT

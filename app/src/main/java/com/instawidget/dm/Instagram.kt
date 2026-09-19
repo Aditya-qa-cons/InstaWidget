@@ -46,20 +46,24 @@ object Instagram {
     }
 
     /**
-     * Ordered by how likely each is to land on the inbox. The https link aimed
-     * at Instagram's own package goes first: Instagram maps its own web URLs
-     * to in-app screens fairly reliably, whereas the custom scheme paths have
-     * come and gone across releases.
+     * Ordered by how likely each is to land on the inbox.
+     *
+     * instagram://direct-inbox leads because it is the one confirmed to open
+     * the inbox on a current Instagram build; the underscore spelling did not
+     * even resolve there, and instagram://direct_inbox opened the home feed on
+     * an older version. [inboxIntent] skips any that do not resolve, so a
+     * device where the first choice is missing still gets a working link
+     * without the user touching anything.
      */
     val INBOX_LINKS: List<InboxLink> = listOf(
+        InboxLink("direct-inbox", "instagram://direct-inbox") {
+            Intent(Intent.ACTION_VIEW, Uri.parse("instagram://direct-inbox"))
+        },
         InboxLink("app-web", "Instagram app via instagram.com/direct/inbox") {
             Intent(Intent.ACTION_VIEW, Uri.parse(WEB_INBOX)).setPackage(MAIN_PACKAGE)
         },
         InboxLink("direct_inbox", "instagram://direct_inbox") {
             Intent(Intent.ACTION_VIEW, Uri.parse("instagram://direct_inbox"))
-        },
-        InboxLink("direct-inbox", "instagram://direct-inbox") {
-            Intent(Intent.ACTION_VIEW, Uri.parse("instagram://direct-inbox"))
         },
         InboxLink("direct_v2", "instagram://direct_v2") {
             Intent(Intent.ACTION_VIEW, Uri.parse("instagram://direct_v2"))
