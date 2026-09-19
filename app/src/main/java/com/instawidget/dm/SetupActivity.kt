@@ -31,6 +31,8 @@ class SetupActivity : Activity() {
         grantButton = findViewById(R.id.setup_grant_button) as Button
 
         grantButton.setOnClickListener { openNotificationAccessSettings() }
+        (findViewById(R.id.setup_restricted_button) as View)
+            .setOnClickListener { openAppInfo() }
         (findViewById(R.id.setup_clear_button) as View).setOnClickListener { clearCache() }
     }
 
@@ -58,6 +60,14 @@ class SetupActivity : Activity() {
             startActivity(Instagram.notificationAccessSettingsIntent())
         } catch (e: ActivityNotFoundException) {
             // Some heavily skinned builds hide this screen.
+            Toast.makeText(this, R.string.error_no_settings_screen, Toast.LENGTH_LONG).show()
+        }
+    }
+
+    private fun openAppInfo() {
+        try {
+            startActivity(Instagram.appInfoIntent(this))
+        } catch (e: ActivityNotFoundException) {
             Toast.makeText(this, R.string.error_no_settings_screen, Toast.LENGTH_LONG).show()
         }
     }

@@ -114,3 +114,34 @@ adb install -r dist/app-debug.apk
 
 Then open **IG DM Widget**, tap **Open notification access settings**, enable
 it, and add the widget from your launcher's widget picker.
+
+### "Restricted setting" when granting notification access
+
+Android 13 and newer refuse to let a **sideloaded** app hold notification
+listener access. Installing the APK by tapping it in a file manager counts as
+sideloading, and the toggle comes up greyed out behind a *"For your security,
+this setting is currently unavailable"* dialog. It is a platform restriction,
+not an app failure.
+
+Clear it in one of these ways:
+
+**On the phone, no PC needed** — Settings > Apps > (Manage apps) >
+**IG DM Widget** > **⋮** menu, top-right > **Allow restricted settings**. Then
+go back and grant notification access. The setup screen has an *Open this
+app's info page* button that takes you straight there.
+
+**Over adb** — either lift the restriction:
+
+```bash
+adb shell appops set com.instawidget.dm ACCESS_RESTRICTED_SETTINGS allow
+```
+
+or skip the Settings UI and grant the listener directly:
+
+```bash
+adb shell cmd notification allow_listener \
+    com.instawidget.dm/com.instawidget.dm.DmNotificationListener
+```
+
+Installing with `adb install -r` in the first place also usually avoids the
+restriction, because that is a session-based install rather than a sideload.

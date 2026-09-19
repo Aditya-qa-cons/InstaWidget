@@ -65,4 +65,17 @@ object Instagram {
     fun notificationAccessSettingsIntent(): Intent =
         Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS)
             .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+
+    /**
+     * This app's entry in Settings > Apps.
+     *
+     * Needed because Android 13+ hides notification access behind "Restricted
+     * setting" for apps installed from an APK file rather than from a store.
+     * The overflow menu on this screen has the "Allow restricted settings"
+     * item that clears it; there is no intent that opens that menu directly.
+     */
+    fun appInfoIntent(context: Context): Intent =
+        Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
+            .setData(Uri.fromParts("package", context.packageName, null))
+            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
 }
