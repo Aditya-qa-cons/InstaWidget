@@ -337,6 +337,13 @@ Two ways past it, and the first needs no registration at all:
    A *Full Distribution* account costs the usual one-off $25 and needs ID, and
    is only worth it for distributing widely.
 
+   Devices are enrolled by a handshake: the console issues a QR code or link,
+   and the device's owner consents on the device. Google's published guides
+   do not say whether the phone must be signed into the developer's own Google
+   account; a consent handshake is how you would build it if it need not be,
+   but confirm in the console before counting on it for a phone signed in as
+   someone else.
+
 Check the current terms before relying on either; this is a policy that has
 been moving. https://developer.android.com/developer-verification
 
@@ -349,6 +356,16 @@ flag the app again.
 Run this **on a computer**, with the phone connected by USB and USB debugging
 enabled. The script drives the phone through adb; there is no adb on the
 handset, so copying it to the device does nothing.
+
+Enabling USB debugging, once per phone:
+
+1. Settings > About phone, tap **Build number** seven times.
+2. Settings > System > **Developer options** > **USB debugging**.
+3. Plug in, run `adb devices`, and accept the "Allow USB debugging?"
+   fingerprint prompt on the phone.
+
+None of that involves a Google account, which is what makes adb the route that
+works on a phone signed in as someone else.
 
 ```bash
 tools/install.sh              # uses dist/app-release.apk
