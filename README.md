@@ -106,6 +106,22 @@ It expects:
 
 Prefer `./gradlew assembleDebug` whenever the network allows it.
 
+### Widget missing from the launcher's widget picker
+
+Two causes, in the order worth trying:
+
+1. **The launcher cached its widget list.** Newly installed providers often do
+   not show up until the launcher process restarts. Reboot, or force-stop the
+   launcher (Settings > Apps > System launcher > Force stop).
+2. **The build predates the PNG preview.** Some OEM launchers, Xiaomi's
+   included, build their own widget picker: they decode `previewImage` as a
+   bitmap (skipping any widget whose preview is a vector XML) and enumerate
+   providers with `PackageManager.queryBroadcastReceivers` from the launcher
+   process (which filters out non-exported receivers). The widget therefore
+   ships a real PNG preview at four densities and an exported receiver.
+
+`tools/generate-icons.py` regenerates the preview and the launcher icons.
+
 ## Installing
 
 ```bash

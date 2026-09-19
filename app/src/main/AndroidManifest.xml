@@ -14,7 +14,7 @@
 
     <application
         android:allowBackup="false"
-        android:icon="@drawable/ic_launcher"
+        android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
@@ -49,9 +49,18 @@
             android:exported="false"
             android:permission="android.permission.BIND_REMOTEVIEWS" />
 
+        <!--
+          Exported on purpose. The platform delivers APPWIDGET_UPDATE to this
+          component either way, but some OEM launchers build their own widget
+          picker by calling PackageManager.queryBroadcastReceivers from the
+          launcher process, which filters out non-exported receivers and makes
+          the widget invisible in the picker. Nothing sensitive is reachable
+          this way: the receiver only redraws the widget from the local cache.
+        -->
         <receiver
             android:name=".DmWidgetProvider"
-            android:exported="false">
+            android:exported="true"
+            android:label="@string/widget_title">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
             </intent-filter>
