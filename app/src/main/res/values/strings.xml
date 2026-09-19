@@ -4,6 +4,7 @@
     <string name="listener_label">IG DM Widget notification reader</string>
 
     <string name="widget_title">Instagram DMs</string>
+    <string name="widget_reader_offline">Reader offline \u00b7 tap to reconnect</string>
     <string name="widget_setup_description">IG DM Widget setup</string>
     <string name="widget_empty_title">All quiet \u2728</string>
     <string name="widget_empty_body">New Instagram DMs land here</string>
@@ -32,6 +33,11 @@
     <string name="step_link_done">Opens: %1$s</string>
     <string name="step_link_todo">No Instagram link available</string>
     <string name="setup_links_hint">Chosen automatically. Instagram publishes no supported link to the inbox and the working one differs by app version, so if the widget lands on the home feed instead, try the others and keep whichever opens your DMs.</string>
+    <string name="button_open_threads_off">Open the exact conversation: off</string>
+    <string name="button_open_threads_on">Open the exact conversation: on</string>
+    <string name="toast_threads_on">Rows will try ig.me to open that chat. Falls back to the inbox when the sender is a display name rather than a username.</string>
+    <string name="toast_threads_off">Rows will open the inbox.</string>
+
     <string name="button_show_links">Change Instagram link</string>
     <string name="button_hide_links">Hide</string>
 

@@ -40,6 +40,7 @@ class DmNotificationListener : NotificationListenerService() {
      */
     override fun onListenerDisconnected() {
         super.onListenerDisconnected()
+        DmDiagnostics.onListenerDisconnected(this)
         ListenerControl.requestRebind(this)
     }
 

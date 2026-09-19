@@ -25,6 +25,7 @@ object DmDiagnostics {
     private const val KEY_TOTAL_SEEN = "totalSeen"
     private const val KEY_INSTAGRAM_SEEN = "instagramSeen"
     private const val KEY_CONNECTED_AT = "connectedAt"
+    private const val KEY_DISCONNECTED_AT = "disconnectedAt"
 
     private const val FIELD_TIME = "t"
     private const val FIELD_ACCEPTED = "a"
@@ -35,12 +36,26 @@ object DmDiagnostics {
     private fun prefs(context: Context) = context.applicationContext
         .getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
 
-    /** Whether the listener has ever actually been bound and run. */
-    fun hasEverConnected(context: Context): Boolean =
-        prefs(context).getLong(KEY_CONNECTED_AT, 0L) > 0L
+    /**
+     * Whether the listener is bound right now.
+     *
+     * There is no API to ask the system, so this tracks the connect and
+     * disconnect callbacks. Comparing the two timestamps rather than keeping a
+     * boolean means a stale "connected" flag cannot outlive a disconnect that
+     * arrived first.
+     */
+    fun isConnected(context: Context): Boolean {
+        val p = prefs(context)
+        val connected = p.getLong(KEY_CONNECTED_AT, 0L)
+        return connected > 0L && connected > p.getLong(KEY_DISCONNECTED_AT, 0L)
+    }
 
     fun onListenerConnected(context: Context) {
         prefs(context).edit().putLong(KEY_CONNECTED_AT, System.currentTimeMillis()).apply()
+    }
+
+    fun onListenerDisconnected(context: Context) {
+        prefs(context).edit().putLong(KEY_DISCONNECTED_AT, System.currentTimeMillis()).apply()
     }
 
     /** Counts every notification the listener is handed, from any app. */
@@ -106,8 +121,17 @@ object DmDiagnostics {
         }
     }
 
+    /**
+     * Clears the log and the counters, but *not* the connection timestamps:
+     * those describe the listener's current state, not history, and wiping
+     * them would make the setup screen report a live reader as dead.
+     */
     fun clear(context: Context) {
-        prefs(context).edit().clear().apply()
+        prefs(context).edit()
+            .remove(KEY_ENTRIES)
+            .remove(KEY_TOTAL_SEEN)
+            .remove(KEY_INSTAGRAM_SEEN)
+            .apply()
     }
 
     /** Human-readable dump, for showing on screen and copying to the clipboard. */
@@ -119,8 +143,9 @@ object DmDiagnostics {
         builder.append("Notification access: ")
             .append(if (Instagram.isNotificationAccessGranted(context)) "granted" else "NOT granted")
             .append('\n')
-        builder.append("Listener last connected: ")
-            .append(if (connectedAt > 0L) time(context, connectedAt) else "never")
+        builder.append("Listener: ")
+            .append(if (isConnected(context)) "connected" else "NOT connected")
+            .append(if (connectedAt > 0L) " (last connected ${time(context, connectedAt)})" else " (never connected)")
             .append('\n')
         builder.append("Notifications seen: ")
             .append(p.getInt(KEY_TOTAL_SEEN, 0))

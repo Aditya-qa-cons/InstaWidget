@@ -154,6 +154,17 @@ opened the inbox from the widget. Two things make that count honest:
 `tools/grouping-check.py` ports those merge rules to Python and asserts them
 against the awkward cases, since the real ones cannot run off-device.
 
+## Opening the exact conversation
+
+Off by default, behind **Open the exact conversation** on the setup screen.
+When on, a row tries `https://ig.me/m/<username>`, Instagram's own "message me"
+link, which is the closest thing it publishes to a per-thread deep link.
+
+It only applies when the notification title is a handle rather than a display
+name -- `priya.desai` qualifies, `Cozy Cat Kitchen | Homemade Cat...` does not
+-- and `Instagram.threadIntent` returns null in every other case, so the row
+falls back to the inbox rather than failing.
+
 ## Known limitation: no per-thread deep link
 
 Instagram has **no public deep link to a specific conversation**, so every row
@@ -251,11 +262,33 @@ a stale cached widget list, which is worth trying before anything else.
 
 `tools/generate-icons.py` regenerates the preview and the launcher icons.
 
-## Installing
+### The widget looks fine but stopped updating
+
+A listener that has silently died is indistinguishable from a quiet inbox, so
+the widget shows a **Reader offline** strip when notification access is granted
+but the service is not bound. Tapping it opens the setup screen, which asks for
+a rebind on resume.
+
+## Installing and upgrading
 
 ```bash
-adb install -r dist/app-debug.apk
+tools/install.sh              # uses dist/app-debug.apk
+tools/install.sh path/to.apk
 ```
+
+Use the script rather than tapping the APK. Android 13+ marks an app installed
+from an APK file as restricted and resets the `ACCESS_RESTRICTED_SETTINGS`
+app-op, which is what guards notification access, and re-installing by tapping
+re-applies that **every time** -- hence the
+disable-access / allow-restricted-settings / re-enable-access dance on each
+upgrade. Nothing in the app can prevent it: the flag is set by whoever installs
+it, not by the app. `adb install` is a session-based install and is exempt, and
+the script additionally re-asserts the app-op and the listener grant, so an
+upgrade needs no taps at all.
+
+Without a cable, `adb install -r dist/app-debug.apk` alone usually preserves
+the grant too. Tapping the APK in a file manager is the one route that
+reliably loses it.
 
 Then open **IG DM Widget**, tap **Open notification access settings**, enable
 it, and add the widget from your launcher's widget picker.

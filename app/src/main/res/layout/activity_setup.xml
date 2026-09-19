@@ -154,6 +154,11 @@
                 style="@style/ButtonSecondary"
                 android:text="@string/button_show_links" />
 
+            <Button
+                android:id="@+id/setup_threads_toggle"
+                style="@style/ButtonSecondary"
+                android:text="@string/button_open_threads_off" />
+
             <LinearLayout
                 android:id="@+id/setup_links_container"
                 android:layout_width="match_parent"

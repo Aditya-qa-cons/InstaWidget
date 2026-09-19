@@ -25,9 +25,15 @@ class OpenInboxActivity : Activity() {
         // Open Instagram first. Clearing counts is the nice-to-have; landing
         // in the inbox is the thing the user asked for, so it must not be
         // able to fail because of bookkeeping.
+        // A row passes its sender; the header and empty state pass nothing.
+        // threadIntent returns null unless the feature is on and the sender
+        // is a usable handle, so this falls back to the inbox by itself.
+        val sender = intent?.getStringExtra(EXTRA_SENDER)
+        val target = Instagram.threadIntent(this, sender) ?: Instagram.inboxIntent(this)
+
         var opened = true
         try {
-            startActivity(Instagram.inboxIntent(this))
+            startActivity(target)
         } catch (e: ActivityNotFoundException) {
             opened = false
             Toast.makeText(this, R.string.toast_link_unavailable, Toast.LENGTH_LONG).show()
@@ -43,5 +49,9 @@ class OpenInboxActivity : Activity() {
 
         // Theme.NoDisplay requires finishing before the activity would resume.
         finish()
+    }
+
+    companion object {
+        const val EXTRA_SENDER = "com.instawidget.dm.extra.SENDER"
     }
 }

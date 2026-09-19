@@ -39,6 +39,7 @@ class SetupActivity : Activity() {
 
     private lateinit var linkStatus: TextView
     private lateinit var linksToggle: Button
+    private lateinit var threadsToggle: Button
     private lateinit var linksContainer: LinearLayout
 
     private lateinit var diagnosticsView: TextView
@@ -65,6 +66,7 @@ class SetupActivity : Activity() {
 
         linkStatus = findViewById(R.id.step_link_status) as TextView
         linksToggle = findViewById(R.id.setup_links_toggle) as Button
+        threadsToggle = findViewById(R.id.setup_threads_toggle) as Button
         linksContainer = findViewById(R.id.setup_links_container) as LinearLayout
 
         diagnosticsView = findViewById(R.id.setup_diagnostics) as TextView
@@ -74,6 +76,7 @@ class SetupActivity : Activity() {
         readerButton.setOnClickListener { reconnectListener() }
         widgetButton.setOnClickListener { pinWidget() }
         linksToggle.setOnClickListener { toggleLinks() }
+        threadsToggle.setOnClickListener { toggleThreads() }
 
         (findViewById(R.id.setup_copy_diagnostics_button) as View)
             .setOnClickListener { copyDiagnostics() }
@@ -96,7 +99,7 @@ class SetupActivity : Activity() {
         // Access granted but the reader has never run means the binding was
         // lost, most often to an app update or an OEM battery manager. Repair
         // it rather than reporting it.
-        if (granted && !DmDiagnostics.hasEverConnected(this)) {
+        if (granted && !DmDiagnostics.isConnected(this)) {
             ListenerControl.requestRebind(this)
         }
 
@@ -127,7 +130,7 @@ class SetupActivity : Activity() {
     }
 
     private fun renderReaderStep(granted: Boolean) {
-        val connected = DmDiagnostics.hasEverConnected(this)
+        val connected = DmDiagnostics.isConnected(this)
         if (connected) {
             done(readerStatus, R.string.step_reader_done)
             readerHint.visibility = View.GONE
@@ -164,6 +167,25 @@ class SetupActivity : Activity() {
             todo(linkStatus, getString(R.string.step_link_todo))
         }
         renderInboxLinks()
+        renderThreadsToggle()
+    }
+
+    private fun renderThreadsToggle() {
+        threadsToggle.setText(
+            if (Instagram.openThreadsEnabled(this)) R.string.button_open_threads_on
+            else R.string.button_open_threads_off
+        )
+    }
+
+    private fun toggleThreads() {
+        val enabled = !Instagram.openThreadsEnabled(this)
+        Instagram.setOpenThreads(this, enabled)
+        renderThreadsToggle()
+        Toast.makeText(
+            this,
+            if (enabled) R.string.toast_threads_on else R.string.toast_threads_off,
+            Toast.LENGTH_LONG
+        ).show()
     }
 
     private fun done(view: TextView, resId: Int) = done(view, getString(resId))

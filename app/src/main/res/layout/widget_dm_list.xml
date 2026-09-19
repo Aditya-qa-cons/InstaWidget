@@ -46,6 +46,28 @@
             android:src="@drawable/ic_settings_light" />
     </LinearLayout>
 
+    <!--
+      Shown only when notification access is on but the reader is not bound.
+      Without it the widget just freezes on stale messages and looks fine.
+    -->
+    <TextView
+        android:id="@+id/widget_warning"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="6dp"
+        android:background="@drawable/warning_background"
+        android:drawablePadding="6dp"
+        android:gravity="center"
+        android:paddingLeft="10dp"
+        android:paddingTop="6dp"
+        android:paddingRight="10dp"
+        android:paddingBottom="6dp"
+        android:text="@string/widget_reader_offline"
+        android:textColor="@color/widget_warning_text"
+        android:textSize="11sp"
+        android:textStyle="bold"
+        android:visibility="gone" />
+
     <ListView
         android:id="@+id/dm_list"
         android:layout_width="match_parent"

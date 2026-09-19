@@ -12,4 +12,6 @@
     <color name="widget_body">#FFCFC7D6</color>
     <color name="widget_secondary">#FF948CA0</color>
     <color name="widget_row">#14FFFFFF</color>
+    <color name="widget_warning_bg">#33F0A65A</color>
+    <color name="widget_warning_text">#FFF3B872</color>
 </resources>

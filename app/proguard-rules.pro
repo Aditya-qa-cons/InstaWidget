@@ -3,3 +3,5 @@
 -keep class com.instawidget.dm.DmWidgetProvider { *; }
 -keep class com.instawidget.dm.DmWidgetService { *; }
 -keep class com.instawidget.dm.SetupActivity { *; }
+-keep class com.instawidget.dm.OpenInboxActivity { *; }
+-keep class com.instawidget.dm.BootReceiver { *; }

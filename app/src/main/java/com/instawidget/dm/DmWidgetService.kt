@@ -52,10 +52,13 @@ private class DmRemoteViewsFactory(
             views.setViewVisibility(R.id.row_count, View.GONE)
         }
 
-        // The template PendingIntent lives on the provider; rows only need to
-        // opt in. There is no per-thread deep link to pass along, so the
-        // fill-in intent carries nothing but the click itself.
-        views.setOnClickFillInIntent(R.id.row_root, Intent())
+        // The template PendingIntent lives on the provider; the fill-in adds
+        // who this row is, which OpenInboxActivity uses to aim at the exact
+        // conversation when that option is on.
+        views.setOnClickFillInIntent(
+            R.id.row_root,
+            Intent().putExtra(OpenInboxActivity.EXTRA_SENDER, message.sender)
+        )
         return views
     }
 

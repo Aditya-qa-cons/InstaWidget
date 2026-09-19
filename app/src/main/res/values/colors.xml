@@ -30,6 +30,8 @@
     <color name="widget_body">#FF554E5E</color>
     <color name="widget_secondary">#FF9A93A3</color>
     <color name="widget_row">#0A833AB4</color>
+    <color name="widget_warning_bg">#1FC1620E</color>
+    <color name="widget_warning_text">#FFC1620E</color>
 
     <!-- Avatar circles, picked by a hash of the sender's name. -->
     <color name="avatar_1">#FFE1306C</color>

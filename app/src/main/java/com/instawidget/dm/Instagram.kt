@@ -25,6 +25,21 @@ object Instagram {
 
     private const val PREFS_NAME = "ig_dm_widget"
     private const val KEY_INBOX_LINK = "inboxLink"
+    private const val KEY_OPEN_THREADS = "openThreads"
+
+    /**
+     * Instagram's "message me" link. https://ig.me/m/<username> opens that
+     * conversation in the app, which is as close to a per-thread deep link as
+     * anything Instagram publishes.
+     */
+    private const val THREAD_LINK = "https://ig.me/m/"
+
+    /**
+     * A notification title is only usable here when it is a handle rather
+     * than a display name: "priya.desai" works, "Cozy Cat Kitchen | Homemade"
+     * plainly does not.
+     */
+    private val USERNAME = Regex("^[A-Za-z0-9._]{1,30}$")
 
     /**
      * One way of asking Instagram for the DM inbox.
@@ -99,6 +114,30 @@ object Instagram {
         return usable?.intent()
             ?: Intent(Intent.ACTION_VIEW, Uri.parse(WEB_INBOX))
                 .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+    }
+
+    /** Whether rows should try to open their own conversation. Off by default. */
+    fun openThreadsEnabled(context: Context): Boolean =
+        prefs(context).getBoolean(KEY_OPEN_THREADS, false)
+
+    fun setOpenThreads(context: Context, enabled: Boolean) {
+        prefs(context).edit().putBoolean(KEY_OPEN_THREADS, enabled).apply()
+    }
+
+    /**
+     * Intent opening the conversation with [sender], or null when that is not
+     * possible: the feature is off, the title is a display name rather than a
+     * handle, or nothing on the device can open the link.
+     */
+    fun threadIntent(context: Context, sender: String?): Intent? {
+        if (!openThreadsEnabled(context)) return null
+        val handle = sender?.trim() ?: return null
+        if (!USERNAME.matches(handle)) return null
+
+        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(THREAD_LINK + handle))
+            .setPackage(MAIN_PACKAGE)
+            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        return if (intent.resolveActivity(context.packageManager) != null) intent else null
     }
 
     /** True once the user has ticked this app in Settings > Notification access. */

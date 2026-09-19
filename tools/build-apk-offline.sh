@@ -55,11 +55,24 @@ JAVA="$JAVA_HOME/bin/java"
 JAVAC="$JAVA_HOME/bin/javac"
 KEYTOOL="$JAVA_HOME/bin/keytool"
 
-MIN_SDK=26
-TARGET_SDK=34
-VERSION_CODE=8
-VERSION_NAME="1.7"
-PACKAGE="com.instawidget.dm"
+# Read the build config from one place rather than keeping a second copy in
+# sync by hand; they drifted apart more than once.
+gradle_value() {
+    sed -n "s/^[[:space:]]*$1[[:space:]]*=[[:space:]]*\"\{0,1\}\([^\"]*\)\"\{0,1\}[[:space:]]*$/\1/p" \
+        "$APP/build.gradle.kts" | head -1
+}
+
+MIN_SDK="$(gradle_value minSdk)"
+TARGET_SDK="$(gradle_value targetSdk)"
+VERSION_CODE="$(gradle_value versionCode)"
+VERSION_NAME="$(gradle_value versionName)"
+PACKAGE="$(gradle_value namespace)"
+
+for pair in "MIN_SDK:$MIN_SDK" "TARGET_SDK:$TARGET_SDK" \
+            "VERSION_CODE:$VERSION_CODE" "VERSION_NAME:$VERSION_NAME" "PACKAGE:$PACKAGE"; do
+    [[ -n "${pair#*:}" ]] || { echo "Could not read ${pair%%:*} from build.gradle.kts" >&2; exit 1; }
+done
+echo "==> ${PACKAGE} ${VERSION_NAME} (${VERSION_CODE}), minSdk ${MIN_SDK}, targetSdk ${TARGET_SDK}"
 
 for tool in "$AAPT2" "$KOTLINC" "$R8_JAR" "$RES_JAR" "$COMPILE_JAR" "$JAVA" "$JAVAC"; do
     [[ -e "$tool" ]] || { echo "Missing required tool: $tool" >&2; exit 1; }

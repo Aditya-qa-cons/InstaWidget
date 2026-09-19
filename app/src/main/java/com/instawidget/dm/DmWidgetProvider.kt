@@ -8,6 +8,7 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Build
+import android.view.View
 import android.widget.RemoteViews
 
 /** The home screen widget: a header plus a scrollable list of DM previews. */
@@ -22,7 +23,7 @@ class DmWidgetProvider : AppWidgetProvider() {
         // never run, the binding was lost and the widget would sit empty
         // forever. No-op once the listener is alive.
         if (Instagram.isNotificationAccessGranted(context) &&
-            !DmDiagnostics.hasEverConnected(context)
+            !DmDiagnostics.isConnected(context)
         ) {
             ListenerControl.requestRebind(context)
         }
@@ -72,6 +73,15 @@ class DmWidgetProvider : AppWidgetProvider() {
         // The small gear is the one exception, so the setup screen stays
         // reachable from the home screen without hijacking the widget's tap.
         views.setOnClickPendingIntent(R.id.widget_setup, setupPendingIntent(context))
+
+        // A reader that has silently died looks exactly like a quiet inbox.
+        // Say so on the widget rather than letting it sit there stale.
+        val offline = Instagram.isNotificationAccessGranted(context) &&
+            !DmDiagnostics.isConnected(context)
+        views.setViewVisibility(R.id.widget_warning, if (offline) View.VISIBLE else View.GONE)
+        if (offline) {
+            views.setOnClickPendingIntent(R.id.widget_warning, setupPendingIntent(context))
+        }
 
         return views
     }

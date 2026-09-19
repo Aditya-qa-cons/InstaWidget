@@ -145,7 +145,10 @@ object DmNotificationFilter {
         parts.add("category=${notification.category ?: "-"}")
         parts.add("template=${extras?.getString(EXTRA_TEMPLATE)?.substringAfterLast('.') ?: "-"}")
         parts.add("channel=${channelIdOf(notification) ?: "-"}")
-        if (extras?.getParcelableArray(EXTRA_MESSAGES) != null) parts.add("hasMessages")
+        // The typed getParcelableArray overload needs API 33; minSdk here is 26.
+        @Suppress("DEPRECATION")
+        val messages = extras?.getParcelableArray(EXTRA_MESSAGES)
+        if (messages != null) parts.add("hasMessages")
         return parts.joinToString(" ")
     }
 
@@ -157,6 +160,8 @@ object DmNotificationFilter {
      */
     private fun latestMessagingStyleMessage(extras: Bundle): MessagingMessage? {
         val array = try {
+            // The typed overload needs API 33; minSdk here is 26.
+            @Suppress("DEPRECATION")
             extras.getParcelableArray(EXTRA_MESSAGES)
         } catch (e: Exception) {
             null
