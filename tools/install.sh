@@ -3,6 +3,11 @@
 # Installs or upgrades the app over adb, without the
 # disable-access / allow-restricted-settings / re-enable-access dance.
 #
+# RUN THIS ON A COMPUTER, not on the phone. It drives the phone over USB via
+# adb; there is no adb on the handset, so copying this script to the device
+# does nothing. Connect the phone by USB with developer options > USB
+# debugging turned on, then run it from the project directory.
+#
 # Why that dance happens: Android 13+ marks an app installed from an APK file
 # as "restricted" and resets the ACCESS_RESTRICTED_SETTINGS app-op, which is
 # what guards notification access. Re-installing by tapping the APK re-applies

@@ -271,6 +271,10 @@ a rebind on resume.
 
 ## Installing and upgrading
 
+Run this **on a computer**, with the phone connected by USB and USB debugging
+enabled. The script drives the phone through adb; there is no adb on the
+handset, so copying it to the device does nothing.
+
 ```bash
 tools/install.sh              # uses dist/app-debug.apk
 tools/install.sh path/to.apk
@@ -286,9 +290,22 @@ it, not by the app. `adb install` is a session-based install and is exempt, and
 the script additionally re-asserts the app-op and the listener grant, so an
 upgrade needs no taps at all.
 
-Without a cable, `adb install -r dist/app-debug.apk` alone usually preserves
-the grant too. Tapping the APK in a file manager is the one route that
-reliably loses it.
+`adb install -r dist/app-debug.apk` alone usually preserves the grant too.
+Tapping the APK in a file manager is the one route that reliably loses it.
+
+### Upgrading with no computer to hand
+
+Tap the APK as usual, then open the app and read the checklist. The dance is
+only needed to *change* the notification access toggle; it is not needed when
+the toggle is still on and merely the binding died, which is the usual case.
+So:
+
+* **"Notification reader running"** — nothing to do.
+* **"Notification reader not running yet"** while access is still granted —
+  tap **Reconnect notification reader**. No restricted-settings step, because
+  nothing in Settings is being changed.
+* **"Grant notification access"** — access really was revoked, and only then
+  does the allow-restricted-settings step apply.
 
 Then open **IG DM Widget**, tap **Open notification access settings**, enable
 it, and add the widget from your launcher's widget picker.
