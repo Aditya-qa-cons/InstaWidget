@@ -87,6 +87,21 @@
             android:text="@string/setup_add_widget"
             android:textSize="15sp" />
 
+        <TextView
+            android:id="@+id/setup_widget_status"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:textSize="15sp"
+            android:textStyle="bold" />
+
+        <Button
+            android:id="@+id/setup_add_widget_button"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:text="@string/button_add_widget" />
+
         <Button
             android:id="@+id/setup_clear_button"
             android:layout_width="match_parent"

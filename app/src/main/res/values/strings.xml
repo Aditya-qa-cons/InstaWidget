@@ -15,7 +15,15 @@
     <string name="setup_restricted_body">Android 13 and newer block notification access for apps installed from an APK file instead of an app store. To clear it: open this app\'s info page, tap the three-dot menu in the top-right corner, and choose \"Allow restricted settings\". Then come back and grant notification access.</string>
     <string name="button_app_info">Open this app\'s info page</string>
 
-    <string name="setup_add_widget">Then long-press your home screen, choose Widgets, and drag \"IG DM Widget\" into place.</string>
+    <string name="setup_add_widget">Add the widget with the button below. That asks your launcher to place it directly, which works even on launchers whose widget picker refuses to list third-party apps (Xiaomi\'s, notably). Long-pressing the home screen and choosing Widgets works too, where the picker lists it.</string>
+    <string name="button_add_widget">Add widget to home screen</string>
+
+    <string name="widget_status_registered">Widget registered with Android: yes</string>
+    <string name="widget_status_missing">Widget registered with Android: no — reinstall the app</string>
+
+    <string name="toast_pin_requested">Asked your launcher to add the widget — confirm on the dialog it shows.</string>
+    <string name="toast_pin_unsupported">This launcher does not support adding widgets from an app. Try the launcher\'s own widget picker, or switch launchers.</string>
+    <string name="toast_pin_failed">The launcher refused the request. Try its own widget picker instead.</string>
 
     <string name="status_granted">Notification access: granted</string>
     <string name="status_missing">Notification access: not granted yet</string>

@@ -108,17 +108,31 @@ Prefer `./gradlew assembleDebug` whenever the network allows it.
 
 ### Widget missing from the launcher's widget picker
 
-Two causes, in the order worth trying:
+Open the app. It reports **"Widget registered with Android: yes"** when the
+framework has the provider, which it reads back from
+`AppWidgetManager.getInstalledProviders()`. If that says yes and the picker
+still does not list the widget, the app is fine and the launcher is hiding it.
 
-1. **The launcher cached its widget list.** Newly installed providers often do
-   not show up until the launcher process restarts. Reboot, or force-stop the
-   launcher (Settings > Apps > System launcher > Force stop).
-2. **The build predates the PNG preview.** Some OEM launchers, Xiaomi's
-   included, build their own widget picker: they decode `previewImage` as a
-   bitmap (skipping any widget whose preview is a vector XML) and enumerate
-   providers with `PackageManager.queryBroadcastReceivers` from the launcher
-   process (which filters out non-exported receivers). The widget therefore
-   ships a real PNG preview at four densities and an exported receiver.
+**Use the "Add widget to home screen" button.** It calls
+`AppWidgetManager.requestPinAppWidget()`, which asks the launcher to place the
+widget directly. That is a different code path from the picker, and launchers
+that omit third-party widgets from their picker generally still honour it.
+Xiaomi's launcher is the reason this button exists: its picker lists a curated
+set of first-party widgets and will not surface this one at all, by name or by
+search.
+
+Two further things the app already does for pickier launchers:
+
+* Ships a real **PNG preview** at four densities. Launchers that build their
+  own picker tend to decode `previewImage` with `BitmapFactory`, which returns
+  null for a vector XML drawable, and then skip the widget.
+* **Exports the widget receiver.** The platform delivers `APPWIDGET_UPDATE` to
+  the component either way, but a launcher enumerating providers with
+  `PackageManager.queryBroadcastReceivers` from its own process never sees a
+  non-exported receiver.
+
+Restarting the launcher (Settings > Apps > System launcher > Force stop) clears
+a stale cached widget list, which is worth trying before anything else.
 
 `tools/generate-icons.py` regenerates the preview and the launcher icons.
 

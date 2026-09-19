@@ -19,6 +19,7 @@ class SetupActivity : Activity() {
 
     private lateinit var statusView: TextView
     private lateinit var grantButton: Button
+    private lateinit var widgetStatusView: TextView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -29,10 +30,13 @@ class SetupActivity : Activity() {
         // against older platform jars by tools/build-apk-offline.sh.
         statusView = findViewById(R.id.setup_status) as TextView
         grantButton = findViewById(R.id.setup_grant_button) as Button
+        widgetStatusView = findViewById(R.id.setup_widget_status) as TextView
 
         grantButton.setOnClickListener { openNotificationAccessSettings() }
         (findViewById(R.id.setup_restricted_button) as View)
             .setOnClickListener { openAppInfo() }
+        (findViewById(R.id.setup_add_widget_button) as View)
+            .setOnClickListener { pinWidget() }
         (findViewById(R.id.setup_clear_button) as View).setOnClickListener { clearCache() }
     }
 
@@ -41,6 +45,32 @@ class SetupActivity : Activity() {
         // Re-check on every resume: the user typically comes back here straight
         // from the Settings screen.
         render(Instagram.isNotificationAccessGranted(this))
+        renderWidgetStatus()
+    }
+
+    /**
+     * Reports whether the framework knows about the widget provider. If it
+     * does and the launcher still will not list it, the launcher is at fault
+     * and "Add widget to home screen" is the way around it.
+     */
+    private fun renderWidgetStatus() {
+        val registered = WidgetPinner.isProviderRegistered(this)
+        widgetStatusView.setText(
+            if (registered) R.string.widget_status_registered
+            else R.string.widget_status_missing
+        )
+        widgetStatusView.setTextColor(
+            getColor(if (registered) R.color.status_ok else R.color.status_warn)
+        )
+    }
+
+    private fun pinWidget() {
+        val message = when (WidgetPinner.pin(this)) {
+            WidgetPinner.Result.REQUESTED -> R.string.toast_pin_requested
+            WidgetPinner.Result.UNSUPPORTED -> R.string.toast_pin_unsupported
+            WidgetPinner.Result.FAILED -> R.string.toast_pin_failed
+        }
+        Toast.makeText(this, message, Toast.LENGTH_LONG).show()
     }
 
     private fun render(granted: Boolean) {

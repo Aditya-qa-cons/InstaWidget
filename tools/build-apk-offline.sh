@@ -33,7 +33,20 @@ DEX="$OUT/dex"
 
 BUILD_TOOLS="$ANDROID_HOME/build-tools/29.0.3"
 AAPT2="$BUILD_TOOLS/aapt2"
-ANDROID_JAR="${ANDROID_JAR:-$ANDROID_HOME/platforms/android-23/android.jar}"
+
+# Two different framework jars, for two different jobs:
+#
+#  * RES_JAR is what aapt2 links resources against. Ubuntu only packages the
+#    API 23 platform, which is fine -- every attribute this app's XML uses
+#    predates API 23.
+#  * COMPILE_JAR is the Kotlin/javac classpath and has to match compileSdk,
+#    because the code calls API 26 methods such as requestPinAppWidget.
+#    Google only distributes android.jar from dl.google.com, so this uses
+#    Robolectric's android-all build of the same AOSP framework, which is on
+#    Maven Central:
+#      https://repo1.maven.org/maven2/org/robolectric/android-all/
+RES_JAR="${RES_JAR:-$ANDROID_HOME/platforms/android-23/android.jar}"
+COMPILE_JAR="${COMPILE_JAR:-$TOOLS_DIR/android-all-34.jar}"
 KOTLINC="$TOOLS_DIR/kotlinc/bin/kotlinc"
 KOTLIN_STDLIB="$TOOLS_DIR/kotlin-stdlib-1.9.24.jar"
 KOTLIN_ANNOTATIONS="$TOOLS_DIR/annotations-13.0.jar"
@@ -44,11 +57,11 @@ KEYTOOL="$JAVA_HOME/bin/keytool"
 
 MIN_SDK=26
 TARGET_SDK=34
-VERSION_CODE=1
-VERSION_NAME="1.0"
+VERSION_CODE=2
+VERSION_NAME="1.1"
 PACKAGE="com.instawidget.dm"
 
-for tool in "$AAPT2" "$KOTLINC" "$R8_JAR" "$ANDROID_JAR" "$JAVA" "$JAVAC"; do
+for tool in "$AAPT2" "$KOTLINC" "$R8_JAR" "$RES_JAR" "$COMPILE_JAR" "$JAVA" "$JAVAC"; do
     [[ -e "$tool" ]] || { echo "Missing required tool: $tool" >&2; exit 1; }
 done
 
@@ -70,7 +83,7 @@ sed "s|<manifest |<manifest package=\"$PACKAGE\" |" \
 echo "==> aapt2 link"
 "$AAPT2" link \
     -o "$OUT/resources.apk" \
-    -I "$ANDROID_JAR" \
+    -I "$RES_JAR" \
     --manifest "$MANIFEST" \
     --java "$GEN" \
     --min-sdk-version "$MIN_SDK" \
@@ -86,8 +99,8 @@ echo "==> kotlinc"
 # -Xlambdas/-Xsam-conversions=class keep invokedynamic out of the bytecode,
 # which keeps the dex step simple and the output identical across API levels.
 JAVA_HOME="$JAVA_HOME" "$KOTLINC" \
-    -classpath "$ANDROID_JAR:$GEN" \
-    -jvm-target 1.8 \
+    -classpath "$COMPILE_JAR:$GEN" \
+    -jvm-target 17 \
     -Xlambdas=class \
     -Xsam-conversions=class \
     -nowarn \
@@ -98,9 +111,8 @@ JAVA_HOME="$JAVA_HOME" "$KOTLINC" \
 echo "==> javac (generated R.java)"
 mapfile -t JAVA_SOURCES < <(find "$GEN" -name '*.java')
 if (( ${#JAVA_SOURCES[@]} > 0 )); then
-    "$JAVAC" -source 8 -target 8 -nowarn \
-        -bootclasspath "$ANDROID_JAR" \
-        -classpath "$ANDROID_JAR:$CLASSES" \
+    "$JAVAC" -source 17 -target 17 -nowarn \
+        -classpath "$COMPILE_JAR:$CLASSES" \
         -d "$CLASSES" "${JAVA_SOURCES[@]}" 2>&1 | grep -v "bootstrap class path" || true
 fi
 
@@ -109,7 +121,7 @@ echo "==> d8"
 "$JAVA" -cp "$R8_JAR" com.android.tools.r8.D8 \
     --debug \
     --min-api "$MIN_SDK" \
-    --lib "$ANDROID_JAR" \
+    --lib "$COMPILE_JAR" \
     --output "$DEX" \
     --classpath "$CLASSES" \
     "$KOTLIN_STDLIB" \
