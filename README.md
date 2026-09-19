@@ -338,11 +338,14 @@ Two ways past it, and the first needs no registration at all:
    is only worth it for distributing widely.
 
    Devices are enrolled by a handshake: the console issues a QR code or link,
-   and the device's owner consents on the device. Google's published guides
-   do not say whether the phone must be signed into the developer's own Google
-   account; a consent handshake is how you would build it if it need not be,
-   but confirm in the console before counting on it for a phone signed in as
-   someone else.
+   and the device's owner consents on the device. **The phone does not need to
+   be signed into the developer's Google account** — confirmed by enrolling a
+   handset signed in as someone else, which reached "authorised" normally.
+   Google's guides do not state this either way, so it is recorded here.
+
+   The package is registered by its signing certificate, so the keystore
+   matters more than ever: a new key means a new registration, and the
+   fingerprint to paste comes from the keytool command above.
 
 Registration links:
 
