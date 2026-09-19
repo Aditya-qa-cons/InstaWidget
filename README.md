@@ -312,13 +312,33 @@ The two cases look different on the phone, and that is how to tell them apart:
 * **A prompt offering to scan, or a warning with "install anyway"** — a scan
   verdict on an app it has not seen before. Accept the scan, or use
   `tools/install.sh`; `adb install` does not go through the same prompt.
-* **Blocked outright, with no way to proceed** — a policy decision, not a
-  verdict on the code. Nothing about the APK changes this. Try
-  `NO_VERIFY=1 tools/install.sh`, which turns off Play Protect's check on adb
-  installs for that run and restores it afterwards. If that is refused too,
-  the device requires apps to come from a registered developer and the only
-  routes left are registering as one or installing on a device without that
-  requirement.
+* **Blocked outright, with only "Learn more" and OK** — Android developer
+  verification. Nothing about the APK changes this: the objection is that the
+  signing key belongs to no developer registered with Google, not anything
+  the app does.
+
+### Developer verification
+
+Google requires apps installed on certified Android devices to come from a
+registered developer. Enforcement began on 30 September 2026 in Brazil,
+Indonesia, Singapore and Thailand, and expands globally during 2027. It is
+delivered through Play services and applies to Android 7 and up, so the OS
+version on the handset is not what decides it; two phones in the same region
+can differ simply because the check has not reached one of them yet.
+
+Two ways past it, and the first needs no registration at all:
+
+1. **Install over adb.** ADB installs are explicitly exempt, so
+   `tools/install.sh` keeps working on a device that refuses the same APK when
+   tapped. This is the documented path for developing and testing your own
+   builds.
+2. **Register.** A *Limited Distribution* account is free, needs no government
+   ID, and covers up to 20 named devices, which is aimed at exactly this case.
+   A *Full Distribution* account costs the usual one-off $25 and needs ID, and
+   is only worth it for distributing widely.
+
+Check the current terms before relying on either; this is a policy that has
+been moving. https://developer.android.com/developer-verification
 
 Turning off "Scan apps with Play Protect" in the Play Store also works, but it
 disables scanning for everything on the phone, and re-enabling it later can
