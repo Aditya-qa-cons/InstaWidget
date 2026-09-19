@@ -18,9 +18,19 @@
 #
 set -euo pipefail
 
+# Release by default. A debug build is marked android:debuggable and is signed
+# with the generic "CN=Android Debug" identity, and Google Play Protect blocks
+# installs on that basis, so the debug build is only useful for debugging.
+BUILD_TYPE=release
+case "${1:-}" in
+    --debug) BUILD_TYPE=debug ;;
+    --release|"") ;;
+    *) echo "usage: ${0##*/} [--release|--debug]" >&2; exit 1 ;;
+esac
+
 PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 APP="$PROJECT_ROOT/app"
-OUT="$PROJECT_ROOT/app/build/offline"
+OUT="$PROJECT_ROOT/app/build/offline/$BUILD_TYPE"
 GEN="$OUT/gen"
 CLASSES="$OUT/classes"
 RES_COMPILED="$OUT/res-compiled"
@@ -72,7 +82,7 @@ for pair in "MIN_SDK:$MIN_SDK" "TARGET_SDK:$TARGET_SDK" \
             "VERSION_CODE:$VERSION_CODE" "VERSION_NAME:$VERSION_NAME" "PACKAGE:$PACKAGE"; do
     [[ -n "${pair#*:}" ]] || { echo "Could not read ${pair%%:*} from build.gradle.kts" >&2; exit 1; }
 done
-echo "==> ${PACKAGE} ${VERSION_NAME} (${VERSION_CODE}), minSdk ${MIN_SDK}, targetSdk ${TARGET_SDK}"
+echo "==> ${PACKAGE} ${VERSION_NAME} (${VERSION_CODE}) ${BUILD_TYPE}, minSdk ${MIN_SDK}, targetSdk ${TARGET_SDK}"
 
 for tool in "$AAPT2" "$KOTLINC" "$R8_JAR" "$RES_JAR" "$COMPILE_JAR" "$JAVA" "$JAVAC"; do
     [[ -e "$tool" ]] || { echo "Missing required tool: $tool" >&2; exit 1; }
@@ -103,7 +113,7 @@ echo "==> aapt2 link"
     --target-sdk-version "$TARGET_SDK" \
     --version-code "$VERSION_CODE" \
     --version-name "$VERSION_NAME" \
-    --debug-mode \
+    $([[ "$BUILD_TYPE" == debug ]] && echo --debug-mode) \
     --auto-add-overlay \
     "$RES_COMPILED/res.zip"
 
@@ -132,7 +142,7 @@ fi
 # --- 4. dex ------------------------------------------------------------------
 echo "==> d8"
 "$JAVA" -cp "$R8_JAR" com.android.tools.r8.D8 \
-    --debug \
+    "--$BUILD_TYPE" \
     --min-api "$MIN_SDK" \
     --lib "$COMPILE_JAR" \
     --output "$DEX" \
@@ -153,29 +163,63 @@ ALIGNED="$OUT/app-debug-unsigned.apk"
 zipalign -p -f 4 "$UNALIGNED" "$ALIGNED"
 
 # --- 7. sign with a debug key ------------------------------------------------
-KEYSTORE="${DEBUG_KEYSTORE:-$HOME/.android/debug.keystore}"
-if [[ ! -f "$KEYSTORE" ]]; then
-    echo "==> creating debug keystore at $KEYSTORE"
-    mkdir -p "$(dirname "$KEYSTORE")"
-    "$KEYTOOL" -genkeypair -v \
-        -keystore "$KEYSTORE" \
-        -storepass android -keypass android \
-        -alias androiddebugkey \
-        -keyalg RSA -keysize 2048 -validity 10950 \
-        -dname "CN=Android Debug,O=Android,C=US" >/dev/null
+if [[ "$BUILD_TYPE" == debug ]]; then
+    KEYSTORE="${DEBUG_KEYSTORE:-$HOME/.android/debug.keystore}"
+    STORE_PASS=android
+    KEY_ALIAS=androiddebugkey
+    if [[ ! -f "$KEYSTORE" ]]; then
+        echo "==> creating debug keystore at $KEYSTORE"
+        mkdir -p "$(dirname "$KEYSTORE")"
+        "$KEYTOOL" -genkeypair -v \
+            -keystore "$KEYSTORE" \
+            -storepass "$STORE_PASS" -keypass "$STORE_PASS" \
+            -alias "$KEY_ALIAS" \
+            -keyalg RSA -keysize 2048 -validity 10950 \
+            -dname "CN=Android Debug,O=Android,C=US" >/dev/null
+    fi
+else
+    # The release key is this app's identity. Android only accepts an upgrade
+    # signed with the same key, so losing it means every future version has to
+    # be installed fresh. It is deliberately kept out of the repository, which
+    # is public: anyone holding it could sign an "upgrade" the phone would
+    # install over this app without a murmur.
+    KEYSTORE="${RELEASE_KEYSTORE:-$PROJECT_ROOT/keystore/release.keystore}"
+    PASS_FILE="${RELEASE_KEYSTORE_PASSFILE:-${KEYSTORE%.keystore}.password}"
+    KEY_ALIAS="${RELEASE_KEY_ALIAS:-instawidget}"
+
+    if [[ ! -f "$KEYSTORE" ]]; then
+        echo "==> creating release keystore at $KEYSTORE"
+        mkdir -p "$(dirname "$KEYSTORE")"
+        # A generated password, written beside the keystore. Both are
+        # gitignored; back them up together.
+        head -c 24 /dev/urandom | base64 | tr -d '\n/+=' > "$PASS_FILE"
+        chmod 600 "$PASS_FILE"
+        "$KEYTOOL" -genkeypair -v \
+            -keystore "$KEYSTORE" \
+            -storepass "$(cat "$PASS_FILE")" -keypass "$(cat "$PASS_FILE")" \
+            -alias "$KEY_ALIAS" \
+            -keyalg RSA -keysize 4096 -validity 10950 \
+            -dname "CN=IG DM Widget,OU=Personal,O=IG DM Widget,C=US" >/dev/null
+        chmod 600 "$KEYSTORE"
+        echo "    Back up $KEYSTORE and $PASS_FILE. Without them, future"
+        echo "    versions cannot upgrade this install."
+    fi
+    [[ -f "$PASS_FILE" ]] || { echo "Keystore password file missing: $PASS_FILE" >&2; exit 1; }
+    STORE_PASS="$(cat "$PASS_FILE")"
 fi
 
 echo "==> apksigner"
-FINAL="$PROJECT_ROOT/dist/app-debug.apk"
+FINAL="$PROJECT_ROOT/dist/app-$BUILD_TYPE.apk"
 mkdir -p "$(dirname "$FINAL")"
 apksigner sign \
     --ks "$KEYSTORE" \
-    --ks-pass pass:android \
-    --key-pass pass:android \
-    --ks-key-alias androiddebugkey \
+    --ks-pass "pass:$STORE_PASS" \
+    --key-pass "pass:$STORE_PASS" \
+    --ks-key-alias "$KEY_ALIAS" \
     --min-sdk-version "$MIN_SDK" \
     --v1-signing-enabled true \
     --v2-signing-enabled true \
+    --v3-signing-enabled true \
     --out "$FINAL" \
     "$ALIGNED"
 

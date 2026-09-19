@@ -18,12 +18,12 @@
 # This script also re-asserts both settings explicitly, so an upgrade is
 # hands-free even if the platform does reset them.
 #
-#   tools/install.sh [path/to/app-debug.apk]
+#   tools/install.sh [path/to/app-release.apk]
 #
 set -euo pipefail
 
 PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-APK="${1:-$PROJECT_ROOT/dist/app-debug.apk}"
+APK="${1:-$PROJECT_ROOT/dist/app-release.apk}"
 PACKAGE="com.instawidget.dm"
 LISTENER="$PACKAGE/$PACKAGE.DmNotificationListener"
 
@@ -37,7 +37,21 @@ if [[ -z "$(adb devices | awk 'NR>1 && $2=="device"')" ]]; then
 fi
 
 echo "==> Installing $APK"
-adb install -r "$APK"
+if ! output="$(adb install -r "$APK" 2>&1)"; then
+    echo "$output"
+    if grep -q "INSTALL_FAILED_UPDATE_INCOMPATIBLE\|signatures do not match" <<<"$output"; then
+        cat <<'MSG'
+
+The installed copy is signed with a different key, and Android will not
+upgrade across a signature change. This happens once, moving off the old
+debug-signed build. Uninstalling drops the cached DMs and the notification
+access grant; the script re-grants access afterwards.
+
+    adb uninstall com.instawidget.dm && tools/install.sh
+MSG
+    fi
+    exit 1
+fi
 
 # Lift the Android 13+ sideload restriction. Harmless where it is not applied.
 echo "==> Allowing restricted settings"

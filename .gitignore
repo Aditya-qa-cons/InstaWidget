@@ -11,3 +11,6 @@ local.properties
 /app/build/
 /.kotlin/
 /dist/*.idsig
+
+# Signing keys: the release key is this app's identity and the repo is public.
+/keystore/

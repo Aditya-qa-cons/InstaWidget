@@ -269,6 +269,36 @@ the widget shows a **Reader offline** strip when notification access is granted
 but the service is not bound. Tapping it opens the setup screen, which asks for
 a rebind on resume.
 
+## Release and debug builds
+
+```bash
+tools/build-apk-offline.sh            # dist/app-release.apk
+tools/build-apk-offline.sh --debug    # dist/app-debug.apk
+```
+
+**Install the release build.** A debug build is marked `android:debuggable`
+and is signed with the generic `CN=Android Debug` identity, and Google Play
+Protect blocks installs on those grounds. The release build is neither: no
+debuggable flag, and a real 4096-bit signing identity.
+
+That signing key is the app's identity. Android only accepts an upgrade signed
+with the same key, so the keystore under `keystore/` has to survive: lose it
+and every future version must be installed fresh, taking the cached DMs and the
+notification access grant with it. It is gitignored deliberately — this
+repository is public, and anyone holding that key could sign an "upgrade" the
+phone would install over this app without complaint. Back up
+`keystore/release.keystore` and `keystore/release.password` together,
+somewhere private.
+
+Moving from the old debug-signed build to the release build is a signature
+change, so it needs one uninstall:
+
+```bash
+adb uninstall com.instawidget.dm && tools/install.sh
+```
+
+Upgrades after that are ordinary in-place installs.
+
 ## Installing and upgrading
 
 Run this **on a computer**, with the phone connected by USB and USB debugging
@@ -276,7 +306,7 @@ enabled. The script drives the phone through adb; there is no adb on the
 handset, so copying it to the device does nothing.
 
 ```bash
-tools/install.sh              # uses dist/app-debug.apk
+tools/install.sh              # uses dist/app-release.apk
 tools/install.sh path/to.apk
 ```
 
@@ -290,7 +320,7 @@ it, not by the app. `adb install` is a session-based install and is exempt, and
 the script additionally re-asserts the app-op and the listener grant, so an
 upgrade needs no taps at all.
 
-`adb install -r dist/app-debug.apk` alone usually preserves the grant too.
+`adb install -r dist/app-release.apk` alone usually preserves the grant too.
 Tapping the APK in a file manager is the one route that reliably loses it.
 
 ### Upgrading with no computer to hand
