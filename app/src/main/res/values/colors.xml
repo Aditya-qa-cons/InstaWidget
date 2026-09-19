@@ -9,5 +9,7 @@
     <color name="status_ok">#FF1B7F3B</color>
     <color name="status_warn">#FFB3261E</color>
 
+    <color name="diagnostics_background">#FFF2F2F2</color>
+
     <color name="brand">#FFC13584</color>
 </resources>

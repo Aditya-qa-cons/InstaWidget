@@ -7,6 +7,7 @@ import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
+import android.os.Build
 import android.widget.RemoteViews
 
 /** The home screen widget: a header plus a scrollable list of DM previews. */
@@ -26,9 +27,12 @@ class DmWidgetProvider : AppWidgetProvider() {
         if (intent.action == ACTION_REFRESH) {
             val manager = AppWidgetManager.getInstance(context)
             val ids = manager.getAppWidgetIds(ComponentName(context, DmWidgetProvider::class.java))
-            // Tell the collection its data changed, then redraw the chrome.
-            manager.notifyAppWidgetViewDataChanged(ids, R.id.dm_list)
+            // Redraw the chrome first: updateAppWidget re-attaches the remote
+            // adapter, and a notify issued before that can be dropped when the
+            // adapter is replaced. Notifying afterwards is what actually makes
+            // the factory re-read the cache.
             onUpdate(context, manager, ids)
+            manager.notifyAppWidgetViewDataChanged(ids, R.id.dm_list)
             return
         }
         super.onReceive(context, intent)
@@ -52,7 +56,7 @@ class DmWidgetProvider : AppWidgetProvider() {
 
         // Rows fill in this template; every row opens the same inbox because
         // Instagram exposes no per-thread deep link.
-        views.setPendingIntentTemplate(R.id.dm_list, inboxPendingIntent(context))
+        views.setPendingIntentTemplate(R.id.dm_list, inboxTemplatePendingIntent(context))
 
         // The empty state should be tappable too.
         views.setOnClickPendingIntent(R.id.dm_empty, emptyStatePendingIntent(context))
@@ -66,6 +70,28 @@ class DmWidgetProvider : AppWidgetProvider() {
         Instagram.inboxIntent(context),
         PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
     )
+
+    /**
+     * Template behind the list rows.
+     *
+     * A collection's template has to be *mutable*, because the launcher merges
+     * each row's fill-in intent into it; an immutable one silently ignores the
+     * fill-in. It also needs its own request code so it does not collide with
+     * the immutable header PendingIntent, which is otherwise an identical
+     * intent and would be overwritten by FLAG_UPDATE_CURRENT.
+     */
+    private fun inboxTemplatePendingIntent(context: Context): PendingIntent {
+        var flags = PendingIntent.FLAG_UPDATE_CURRENT
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            flags = flags or PendingIntent.FLAG_MUTABLE
+        }
+        return PendingIntent.getActivity(
+            context,
+            REQUEST_INBOX_TEMPLATE,
+            Instagram.inboxIntent(context),
+            flags
+        )
+    }
 
     /**
      * With no messages cached the likely reason is that notification access was
@@ -86,6 +112,7 @@ class DmWidgetProvider : AppWidgetProvider() {
         private const val ACTION_REFRESH = "com.instawidget.dm.action.REFRESH"
         private const val REQUEST_INBOX = 1
         private const val REQUEST_SETUP = 2
+        private const val REQUEST_INBOX_TEMPLATE = 3
 
         /** Redraws every placed instance of the widget. */
         fun refreshAll(context: Context) {

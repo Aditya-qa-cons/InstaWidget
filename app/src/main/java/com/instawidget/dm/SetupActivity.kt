@@ -2,6 +2,9 @@ package com.instawidget.dm
 
 import android.app.Activity
 import android.content.ActivityNotFoundException
+import android.content.ClipData
+import android.content.ClipboardManager
+import android.content.Context
 import android.os.Bundle
 import android.view.View
 import android.widget.Button
@@ -20,6 +23,7 @@ class SetupActivity : Activity() {
     private lateinit var statusView: TextView
     private lateinit var grantButton: Button
     private lateinit var widgetStatusView: TextView
+    private lateinit var diagnosticsView: TextView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -31,12 +35,15 @@ class SetupActivity : Activity() {
         statusView = findViewById(R.id.setup_status) as TextView
         grantButton = findViewById(R.id.setup_grant_button) as Button
         widgetStatusView = findViewById(R.id.setup_widget_status) as TextView
+        diagnosticsView = findViewById(R.id.setup_diagnostics) as TextView
 
         grantButton.setOnClickListener { openNotificationAccessSettings() }
         (findViewById(R.id.setup_restricted_button) as View)
             .setOnClickListener { openAppInfo() }
         (findViewById(R.id.setup_add_widget_button) as View)
             .setOnClickListener { pinWidget() }
+        (findViewById(R.id.setup_copy_diagnostics_button) as View)
+            .setOnClickListener { copyDiagnostics() }
         (findViewById(R.id.setup_clear_button) as View).setOnClickListener { clearCache() }
     }
 
@@ -46,6 +53,19 @@ class SetupActivity : Activity() {
         // from the Settings screen.
         render(Instagram.isNotificationAccessGranted(this))
         renderWidgetStatus()
+        diagnosticsView.text = DmDiagnostics.report(this)
+    }
+
+    private fun copyDiagnostics() {
+        val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as? ClipboardManager
+        if (clipboard == null) {
+            Toast.makeText(this, R.string.toast_copy_failed, Toast.LENGTH_SHORT).show()
+            return
+        }
+        clipboard.setPrimaryClip(
+            ClipData.newPlainText(getString(R.string.app_name), DmDiagnostics.report(this))
+        )
+        Toast.makeText(this, R.string.toast_copied, Toast.LENGTH_SHORT).show()
     }
 
     /**
@@ -104,6 +124,7 @@ class SetupActivity : Activity() {
 
     private fun clearCache() {
         DmStore.clear(this)
+        DmDiagnostics.clear(this)
         DmWidgetProvider.refreshAll(this)
         Toast.makeText(this, R.string.toast_cleared, Toast.LENGTH_SHORT).show()
     }

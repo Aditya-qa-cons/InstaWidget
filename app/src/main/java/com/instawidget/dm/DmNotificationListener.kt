@@ -15,6 +15,8 @@ class DmNotificationListener : NotificationListenerService() {
 
     override fun onListenerConnected() {
         super.onListenerConnected()
+        DmDiagnostics.onListenerConnected(this)
+
         // Catch up on DMs that were already in the shade when access was granted.
         val existing = try {
             activeNotifications
@@ -25,26 +27,40 @@ class DmNotificationListener : NotificationListenerService() {
         var changed = false
         // Oldest first, so the newest ends up at the top of the cache.
         for (sbn in existing.sortedBy { it.postTime }) {
-            val message = DmNotificationFilter.extract(sbn) ?: continue
-            if (DmStore.add(this, message)) changed = true
+            if (handle(sbn)) changed = true
         }
         if (changed) DmWidgetProvider.refreshAll(this)
     }
 
     override fun onNotificationPosted(sbn: StatusBarNotification?) {
         val notification = sbn ?: return
-        val message = try {
-            DmNotificationFilter.extract(notification)
-        } catch (e: Exception) {
-            // A malformed notification from another app must never take the
-            // listener down; the system would stop rebinding us.
-            Log.w(TAG, "Could not read notification from ${notification.packageName}", e)
-            null
-        } ?: return
-
-        if (DmStore.add(this, message)) {
+        if (handle(notification)) {
             DmWidgetProvider.refreshAll(this)
         }
+    }
+
+    /**
+     * Runs one notification through the filter.
+     *
+     * @return true if the cache changed and the widget needs redrawing.
+     */
+    private fun handle(sbn: StatusBarNotification): Boolean = try {
+        val isInstagram = sbn.packageName in Instagram.PACKAGES
+        DmDiagnostics.countNotification(this, isInstagram)
+
+        if (!isInstagram) {
+            false
+        } else {
+            val outcome = DmNotificationFilter.inspect(sbn)
+            DmDiagnostics.record(this, sbn, outcome)
+            outcome is DmNotificationFilter.Outcome.Accepted &&
+                DmStore.add(this, outcome.message)
+        }
+    } catch (e: Exception) {
+        // A malformed notification from another app must never take the
+        // listener down; the system would stop rebinding us.
+        Log.w(TAG, "Could not read notification from ${sbn.packageName}", e)
+        false
     }
 
     private companion object {

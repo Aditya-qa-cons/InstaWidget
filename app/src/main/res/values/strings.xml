@@ -32,6 +32,12 @@
     <string name="button_review_access">Review notification access settings</string>
     <string name="button_clear_cache">Clear cached messages</string>
 
+    <string name="setup_diagnostics_title">Diagnostics</string>
+    <string name="setup_diagnostics_hint">What the notification reader has seen. If a DM arrived but never reached the widget, this says whether it was skipped and why.</string>
+    <string name="button_copy_diagnostics">Copy diagnostics</string>
+    <string name="toast_copied">Diagnostics copied</string>
+    <string name="toast_copy_failed">Could not reach the clipboard</string>
+
     <string name="toast_cleared">Cached messages cleared</string>
     <string name="error_no_settings_screen">This device has no notification access screen. Look for \"Notification access\" or \"Special app access\" in Settings.</string>
 </resources>

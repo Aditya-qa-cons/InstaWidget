@@ -59,6 +59,31 @@ Instagram documents none of this, so `DmNotificationFilter` is layered:
 If you find a notification type slipping through, add its phrase to
 `NON_DM_PHRASES`.
 
+Reading the text is its own problem. A MessagingStyle notification keeps the
+message in a parcelled `android.messages` array and can leave `EXTRA_TEXT`
+unset entirely, so the filter reads that array first (newest entry backwards),
+then falls back to `EXTRA_TEXT`, `EXTRA_BIG_TEXT`, the last `android.textLines`
+entry, and finally `android.summaryText`. MessagingStyle is also treated as
+proof that the notification is a DM.
+
+## When a DM arrives but the widget stays empty
+
+The setup screen has a **Diagnostics** panel showing what the listener saw and
+what the filter decided, plus a **Copy diagnostics** button. It answers the
+three questions that look identical from the outside:
+
+* **"Notifications seen: 0 total"** — the listener is not running at all.
+  Notification access is off, or the OEM killed the service (see the MIUI notes
+  under Installing).
+* **"0 from Instagram"** while the total climbs — the listener works, but
+  Instagram is not posting notifications. Check Instagram's own DM notification
+  settings, and note that Instagram posts nothing while you are sitting in the
+  conversation.
+* **A `SKIPPED` line** — the notification arrived and the filter rejected it.
+  The line says why and dumps the signals it saw (`category`, `template`,
+  `channel`, whether MessagingStyle messages were present), which is enough to
+  fix the rule in `DmNotificationFilter`.
+
 ## Known limitation: no per-thread deep link
 
 Instagram exposes `instagram://direct_inbox` but has **no public deep link to a
