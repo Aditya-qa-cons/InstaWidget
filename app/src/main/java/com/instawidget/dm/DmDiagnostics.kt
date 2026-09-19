@@ -35,6 +35,10 @@ object DmDiagnostics {
     private fun prefs(context: Context) = context.applicationContext
         .getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
 
+    /** Whether the listener has ever actually been bound and run. */
+    fun hasEverConnected(context: Context): Boolean =
+        prefs(context).getLong(KEY_CONNECTED_AT, 0L) > 0L
+
     fun onListenerConnected(context: Context) {
         prefs(context).edit().putLong(KEY_CONNECTED_AT, System.currentTimeMillis()).apply()
     }

@@ -32,6 +32,20 @@
     <string name="button_review_access">Review notification access settings</string>
     <string name="button_clear_cache">Clear cached messages</string>
 
+    <string name="setup_links_title">Which link opens your DM inbox?</string>
+    <string name="setup_links_hint">Instagram publishes no supported deep link to the inbox, and which of these works depends on your Instagram version. Tap Try on each until one lands on your DMs rather than the home feed, then tap Use so the widget uses it.</string>
+    <string name="button_try_link">Try</string>
+    <string name="button_use_link">Use</string>
+    <string name="link_selected">%1$s  (in use)</string>
+    <string name="toast_link_selected">Widget will now open: %1$s</string>
+    <string name="toast_link_unavailable">Nothing on this phone can open that link.</string>
+
+    <string name="setup_rebind_title">Notification reader not running?</string>
+    <string name="setup_rebind_hint">If the diagnostics below say the listener never connected while access is granted, the binding was lost — usually to an app update or a battery manager. This asks Android to reconnect it. If it stays disconnected, turn notification access off and back on, and on Xiaomi enable Autostart and set battery saver to No restrictions.</string>
+    <string name="button_rebind">Reconnect notification reader</string>
+    <string name="toast_rebind_requested">Asked Android to reconnect the reader. Pull down to refresh this screen in a moment.</string>
+    <string name="toast_rebind_failed">Android refused the reconnect request. Check notification access.</string>
+
     <string name="setup_diagnostics_title">Diagnostics</string>
     <string name="setup_diagnostics_hint">What the notification reader has seen. If a DM arrived but never reached the widget, this says whether it was skipped and why.</string>
     <string name="button_copy_diagnostics">Copy diagnostics</string>

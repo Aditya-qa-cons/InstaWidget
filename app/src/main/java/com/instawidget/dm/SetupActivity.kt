@@ -6,8 +6,10 @@ import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
 import android.os.Bundle
+import android.view.Gravity
 import android.view.View
 import android.widget.Button
+import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
 
@@ -24,6 +26,7 @@ class SetupActivity : Activity() {
     private lateinit var grantButton: Button
     private lateinit var widgetStatusView: TextView
     private lateinit var diagnosticsView: TextView
+    private lateinit var linksContainer: LinearLayout
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -36,6 +39,7 @@ class SetupActivity : Activity() {
         grantButton = findViewById(R.id.setup_grant_button) as Button
         widgetStatusView = findViewById(R.id.setup_widget_status) as TextView
         diagnosticsView = findViewById(R.id.setup_diagnostics) as TextView
+        linksContainer = findViewById(R.id.setup_links_container) as LinearLayout
 
         grantButton.setOnClickListener { openNotificationAccessSettings() }
         (findViewById(R.id.setup_restricted_button) as View)
@@ -44,6 +48,8 @@ class SetupActivity : Activity() {
             .setOnClickListener { pinWidget() }
         (findViewById(R.id.setup_copy_diagnostics_button) as View)
             .setOnClickListener { copyDiagnostics() }
+        (findViewById(R.id.setup_rebind_button) as View)
+            .setOnClickListener { reconnectListener() }
         (findViewById(R.id.setup_clear_button) as View).setOnClickListener { clearCache() }
     }
 
@@ -51,10 +57,85 @@ class SetupActivity : Activity() {
         super.onResume()
         // Re-check on every resume: the user typically comes back here straight
         // from the Settings screen.
-        render(Instagram.isNotificationAccessGranted(this))
+        val granted = Instagram.isNotificationAccessGranted(this)
+        render(granted)
         renderWidgetStatus()
+        renderInboxLinks()
+
+        // Access granted but the listener has never run means the binding was
+        // lost, most often to an app update or an OEM battery manager. Ask for
+        // it back before showing the user a report that says "never".
+        if (granted && !DmDiagnostics.hasEverConnected(this)) {
+            ListenerControl.requestRebind(this)
+        }
         diagnosticsView.text = DmDiagnostics.report(this)
     }
+
+    private fun reconnectListener() {
+        val ok = ListenerControl.requestRebind(this)
+        Toast.makeText(
+            this,
+            if (ok) R.string.toast_rebind_requested else R.string.toast_rebind_failed,
+            Toast.LENGTH_LONG
+        ).show()
+        diagnosticsView.text = DmDiagnostics.report(this)
+    }
+
+    /**
+     * One row per candidate inbox link. Instagram's behaviour here varies by
+     * app version, so the user picks whichever actually lands on the inbox.
+     */
+    private fun renderInboxLinks() {
+        linksContainer.removeAllViews()
+        val selected = Instagram.selectedLinkId(this)
+        for (link in Instagram.INBOX_LINKS) {
+            linksContainer.addView(buildLinkRow(link, link.id == selected))
+        }
+    }
+
+    private fun buildLinkRow(link: Instagram.InboxLink, isSelected: Boolean): View {
+        val row = LinearLayout(this).apply {
+            orientation = LinearLayout.HORIZONTAL
+            gravity = Gravity.CENTER_VERTICAL
+            setPadding(0, dp(4), 0, dp(4))
+        }
+
+        val label = TextView(this).apply {
+            text = if (isSelected) getString(R.string.link_selected, link.label) else link.label
+            textSize = 13f
+            isEnabled = link.isAvailable(this@SetupActivity)
+            layoutParams = LinearLayout.LayoutParams(0, WRAP, 1f)
+        }
+        row.addView(label)
+
+        row.addView(Button(this).apply {
+            setText(R.string.button_try_link)
+            setOnClickListener { tryLink(link) }
+        })
+        row.addView(Button(this).apply {
+            setText(R.string.button_use_link)
+            setOnClickListener { useLink(link) }
+        })
+        return row
+    }
+
+    private fun tryLink(link: Instagram.InboxLink) {
+        try {
+            startActivity(link.intent())
+        } catch (e: ActivityNotFoundException) {
+            Toast.makeText(this, R.string.toast_link_unavailable, Toast.LENGTH_LONG).show()
+        }
+    }
+
+    private fun useLink(link: Instagram.InboxLink) {
+        Instagram.selectLink(this, link.id)
+        DmWidgetProvider.refreshAll(this)
+        renderInboxLinks()
+        Toast.makeText(this, getString(R.string.toast_link_selected, link.label), Toast.LENGTH_SHORT)
+            .show()
+    }
+
+    private fun dp(value: Int): Int = (value * resources.displayMetrics.density).toInt()
 
     private fun copyDiagnostics() {
         val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as? ClipboardManager
@@ -127,5 +208,9 @@ class SetupActivity : Activity() {
         DmDiagnostics.clear(this)
         DmWidgetProvider.refreshAll(this)
         Toast.makeText(this, R.string.toast_cleared, Toast.LENGTH_SHORT).show()
+    }
+
+    private companion object {
+        const val WRAP = LinearLayout.LayoutParams.WRAP_CONTENT
     }
 }

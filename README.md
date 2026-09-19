@@ -72,9 +72,15 @@ The setup screen has a **Diagnostics** panel showing what the listener saw and
 what the filter decided, plus a **Copy diagnostics** button. It answers the
 three questions that look identical from the outside:
 
-* **"Notifications seen: 0 total"** — the listener is not running at all.
-  Notification access is off, or the OEM killed the service (see the MIUI notes
-  under Installing).
+* **"Notifications seen: 0 total"** and **"Listener last connected: never"**
+  while access reads as granted — the service was never bound, or the binding
+  was lost. An app update is enough to lose it on many builds, and OEM battery
+  managers kill it and never bring it back. Use **Reconnect notification
+  reader**, which calls `NotificationListenerService.requestRebind()`; the
+  setup screen also fires that automatically on resume when access is granted
+  but the listener has never run. If it stays disconnected, toggle notification
+  access off and on, and on Xiaomi enable Autostart and set battery saver to
+  No restrictions.
 * **"0 from Instagram"** while the total climbs — the listener works, but
   Instagram is not posting notifications. Check Instagram's own DM notification
   settings, and note that Instagram posts nothing while you are sitting in the
@@ -86,10 +92,21 @@ three questions that look identical from the outside:
 
 ## Known limitation: no per-thread deep link
 
-Instagram exposes `instagram://direct_inbox` but has **no public deep link to a
-specific conversation**. Every row therefore opens the general inbox. This is
-expected behaviour, not a bug. If Instagram isn't installed, the widget falls
-back to `https://www.instagram.com/direct/inbox/`.
+Instagram has **no public deep link to a specific conversation**, so every row
+opens the general inbox. That is expected behaviour, not a bug.
+
+Getting to the inbox at all is not fixed either: Instagram documents none of
+these links and which one lands on the inbox rather than the home feed depends
+on the installed Instagram version. `Instagram.INBOX_LINKS` holds the
+candidates, and the setup screen lets the user Try each and Use whichever
+works; the choice is remembered and the widget follows it. The order in code is
+the default, most likely first:
+
+1. `https://www.instagram.com/direct/inbox/` sent to `com.instagram.android`
+2. `instagram://direct_inbox`
+3. `instagram://direct-inbox`
+4. `instagram://direct_v2`
+5. the same web URL with no package, which lands in a browser
 
 Every tap on the widget opens that inbox: the header, each row, and the empty
 state. The one exception is the small gear in the header corner, which opens
