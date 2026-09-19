@@ -347,6 +347,33 @@ Two ways past it, and the first needs no registration at all:
    matters more than ever: a new key means a new registration, and the
    fingerprint to paste comes from the keytool command above.
 
+#### The advanced flow
+
+Independently of registration, Android has a documented path for installing
+apps the verification system will not pass. It needs developer *options*
+enabled, but **not USB debugging**, which matters if apps on the phone refuse
+to run while debugging is on:
+
+1. Enable developer mode in system settings.
+2. Confirm you are not being coached through the install.
+3. Restart the phone and re-authenticate.
+4. Wait out a 24-hour protective period.
+5. Confirm with biometrics or the device PIN.
+6. Install, either for 7 days or indefinitely.
+
+The 24-hour wait is the point of it: it exists to break social-engineering
+attacks, so there is no way to skip it.
+
+#### Where the documentation runs out
+
+Google's published guides do not say how an app actually reaches the devices
+authorised on a limited distribution account — whether a plain APK copied to
+the phone is enough once the package and device are registered, or whether it
+has to be delivered through a link or channel the console issues. Registering
+the package and authorising devices was not by itself sufficient on one
+handset here. Check the console for a distribution or share link for the
+package before assuming a file copy will do.
+
 Registration links:
 
 * Sign up (either account type): https://android.google.com/developerconsole/developers
