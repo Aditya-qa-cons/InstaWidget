@@ -2,197 +2,226 @@
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:fillViewport="true">
+    android:background="@color/bg"
+    android:clipToPadding="false"
+    android:fillViewport="true"
+    android:scrollbars="none">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="24dp">
+        android:paddingLeft="18dp"
+        android:paddingTop="18dp"
+        android:paddingRight="18dp"
+        android:paddingBottom="32dp">
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/setup_headline"
-            android:textSize="22sp"
-            android:textStyle="bold" />
-
-        <TextView
+        <!-- Hero -->
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
-            android:lineSpacingMultiplier="1.15"
-            android:text="@string/setup_explainer"
-            android:textSize="15sp" />
+            android:background="@drawable/hero_background"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:padding="20dp">
+
+            <ImageView
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:contentDescription="@string/app_name"
+                android:src="@drawable/ic_dm_light" />
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="14dp"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/setup_headline"
+                    android:textColor="@color/on_brand"
+                    android:textSize="21sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:alpha="0.92"
+                    android:lineSpacingMultiplier="1.15"
+                    android:text="@string/setup_tagline"
+                    android:textColor="@color/on_brand"
+                    android:textSize="13sp" />
+            </LinearLayout>
+        </LinearLayout>
 
         <!-- Step 1: notification access -->
-        <TextView
-            android:id="@+id/step_access_status"
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="28dp"
-            android:textSize="16sp"
-            android:textStyle="bold" />
+            android:layout_marginTop="16dp"
+            android:background="@drawable/card_background"
+            android:orientation="vertical"
+            android:padding="18dp">
 
-        <TextView
-            android:id="@+id/step_access_hint"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
-            android:lineSpacingMultiplier="1.15"
-            android:textSize="14sp" />
+            <TextView
+                android:id="@+id/step_access_status"
+                style="@style/StepTitle" />
 
-        <Button
-            android:id="@+id/step_access_button"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:text="@string/button_grant_access" />
+            <TextView
+                android:id="@+id/step_access_hint"
+                style="@style/StepHint" />
 
-        <Button
-            android:id="@+id/step_restricted_button"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:text="@string/button_app_info" />
+            <Button
+                android:id="@+id/step_access_button"
+                style="@style/ButtonPrimary"
+                android:text="@string/button_grant_access" />
+
+            <Button
+                android:id="@+id/step_restricted_button"
+                style="@style/ButtonSecondary"
+                android:text="@string/button_app_info" />
+        </LinearLayout>
 
         <!-- Step 2: the reader is actually running -->
-        <TextView
-            android:id="@+id/step_reader_status"
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="24dp"
-            android:textSize="16sp"
-            android:textStyle="bold" />
+            android:layout_marginTop="12dp"
+            android:background="@drawable/card_background"
+            android:orientation="vertical"
+            android:padding="18dp">
 
-        <TextView
-            android:id="@+id/step_reader_hint"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
-            android:lineSpacingMultiplier="1.15"
-            android:textSize="14sp" />
+            <TextView
+                android:id="@+id/step_reader_status"
+                style="@style/StepTitle" />
 
-        <Button
-            android:id="@+id/step_reader_button"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:text="@string/button_rebind" />
+            <TextView
+                android:id="@+id/step_reader_hint"
+                style="@style/StepHint" />
+
+            <Button
+                android:id="@+id/step_reader_button"
+                style="@style/ButtonSecondary"
+                android:text="@string/button_rebind" />
+        </LinearLayout>
 
         <!-- Step 3: widget on the home screen -->
-        <TextView
-            android:id="@+id/step_widget_status"
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="24dp"
-            android:textSize="16sp"
-            android:textStyle="bold" />
+            android:layout_marginTop="12dp"
+            android:background="@drawable/card_background"
+            android:orientation="vertical"
+            android:padding="18dp">
 
-        <TextView
-            android:id="@+id/step_widget_hint"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
-            android:lineSpacingMultiplier="1.15"
-            android:textSize="14sp" />
+            <TextView
+                android:id="@+id/step_widget_status"
+                style="@style/StepTitle" />
 
-        <Button
-            android:id="@+id/step_widget_button"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:text="@string/button_add_widget" />
+            <TextView
+                android:id="@+id/step_widget_hint"
+                style="@style/StepHint" />
+
+            <Button
+                android:id="@+id/step_widget_button"
+                style="@style/ButtonPrimary"
+                android:text="@string/button_add_widget" />
+        </LinearLayout>
 
         <!-- Step 4: the inbox link, auto-chosen but overridable -->
-        <TextView
-            android:id="@+id/step_link_status"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="24dp"
-            android:textSize="16sp"
-            android:textStyle="bold" />
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
-            android:lineSpacingMultiplier="1.15"
-            android:text="@string/setup_links_hint"
-            android:textSize="14sp" />
-
-        <Button
-            android:id="@+id/setup_links_toggle"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:text="@string/button_show_links" />
-
         <LinearLayout
-            android:id="@+id/setup_links_container"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
+            android:layout_marginTop="12dp"
+            android:background="@drawable/card_background"
             android:orientation="vertical"
-            android:visibility="gone" />
+            android:padding="18dp">
+
+            <TextView
+                android:id="@+id/step_link_status"
+                style="@style/StepTitle" />
+
+            <TextView
+                style="@style/StepHint"
+                android:text="@string/setup_links_hint" />
+
+            <Button
+                android:id="@+id/setup_links_toggle"
+                style="@style/ButtonSecondary"
+                android:text="@string/button_show_links" />
+
+            <LinearLayout
+                android:id="@+id/setup_links_container"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:orientation="vertical"
+                android:visibility="gone" />
+        </LinearLayout>
 
         <!-- Diagnostics -->
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="36dp"
-            android:text="@string/setup_diagnostics_title"
-            android:textSize="18sp"
-            android:textStyle="bold" />
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="6dp"
-            android:lineSpacingMultiplier="1.15"
-            android:text="@string/setup_diagnostics_hint"
-            android:textSize="14sp" />
-
-        <TextView
-            android:id="@+id/setup_diagnostics"
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="12dp"
-            android:background="@drawable/diagnostics_background"
-            android:fontFamily="monospace"
-            android:padding="12dp"
-            android:textIsSelectable="true"
+            android:background="@drawable/card_background"
+            android:orientation="vertical"
+            android:padding="18dp">
+
+            <TextView
+                style="@style/StepTitle"
+                android:text="@string/setup_diagnostics_title" />
+
+            <TextView
+                style="@style/StepHint"
+                android:text="@string/setup_diagnostics_hint" />
+
+            <TextView
+                android:id="@+id/setup_diagnostics"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="14dp"
+                android:background="@drawable/diagnostics_background"
+                android:fontFamily="monospace"
+                android:padding="14dp"
+                android:textColor="@color/text_secondary"
+                android:textIsSelectable="true"
+                android:textSize="12sp" />
+
+            <Button
+                android:id="@+id/setup_copy_diagnostics_button"
+                style="@style/ButtonSecondary"
+                android:layout_marginTop="14dp"
+                android:text="@string/button_copy_diagnostics" />
+
+            <Button
+                android:id="@+id/setup_clear_button"
+                style="@style/ButtonSecondary"
+                android:text="@string/button_clear_cache" />
+        </LinearLayout>
+
+        <!-- Footnotes -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="18dp"
+            android:lineSpacingMultiplier="1.2"
+            android:text="@string/setup_privacy"
+            android:textColor="@color/text_secondary"
             android:textSize="12sp" />
 
-        <Button
-            android:id="@+id/setup_copy_diagnostics_button"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
-            android:text="@string/button_copy_diagnostics" />
-
-        <Button
-            android:id="@+id/setup_clear_button"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:text="@string/button_clear_cache" />
-
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="24dp"
-            android:lineSpacingMultiplier="1.15"
-            android:text="@string/setup_privacy"
-            android:textSize="13sp" />
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
-            android:lineSpacingMultiplier="1.15"
+            android:layout_marginTop="10dp"
+            android:lineSpacingMultiplier="1.2"
             android:text="@string/setup_limitation"
-            android:textSize="13sp" />
+            android:textColor="@color/text_secondary"
+            android:textSize="12sp" />
 
     </LinearLayout>
 </ScrollView>

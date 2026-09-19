@@ -52,6 +52,23 @@ cannot be requested programmatically, which is what `SetupActivity` exists for.
 So a clean install is: open the app, grant notification access, tap "Add widget
 to home screen". Everything else settles by itself.
 
+## Look and feel
+
+The widget is a rounded card with a soft vertical wash, a gradient header pill
+carrying the Instagram ramp, and one row per DM: a coloured monogram circle,
+sender, relative time and a two-line preview. Instagram's notifications carry
+no avatar the app may reuse and there is no network access to fetch one, so
+`Avatars` draws a stable monogram instead, its colour picked by a hash of the
+sender so the same person always gets the same circle.
+
+Widget colours have a `values-night` variant, since launchers render widgets
+over whatever wallpaper the user has and a permanently white card looks wrong
+at night. The app's own screen stays light and sets its colours explicitly
+rather than inheriting them, so it does not depend on the platform theme.
+
+`tools/generate-icons.py` renders the launcher icons and the widget picker
+preview, which is drawn as an accurate mock of the real layout.
+
 ## Source layout
 
 | File | Role |

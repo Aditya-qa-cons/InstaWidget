@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Dark variants for the widget only. Launchers render widgets over whatever
+  wallpaper the user has, so a permanently white card looks wrong at night.
+  The app's own screen stays light; it draws its colours explicitly rather
+  than relying on the platform theme.
+-->
+<resources>
+    <color name="widget_card_top">#F21F1B24</color>
+    <color name="widget_card_bottom">#F2241F2B</color>
+    <color name="widget_title">#FFF6F2F8</color>
+    <color name="widget_body">#FFCFC7D6</color>
+    <color name="widget_secondary">#FF948CA0</color>
+    <color name="widget_row">#14FFFFFF</color>
+</resources>

@@ -251,22 +251,45 @@ class SetupActivity : Activity() {
             setPadding(0, dp(4), 0, dp(4))
         }
 
+        val available = link.isAvailable(this)
         row.addView(TextView(this).apply {
             text = if (isSelected) getString(R.string.link_selected, link.label) else link.label
             textSize = 13f
-            isEnabled = link.isAvailable(this@SetupActivity)
+            setTextColor(
+                getColor(
+                    when {
+                        isSelected -> R.color.brand_purple
+                        available -> R.color.text_primary
+                        else -> R.color.text_secondary
+                    }
+                )
+            )
+            // Links this phone cannot open are dimmed rather than hidden, so
+            // the list still reads as the full set of things to try.
+            alpha = if (available) 1f else 0.45f
             layoutParams = LinearLayout.LayoutParams(0, WRAP, 1f)
         })
-        row.addView(Button(this).apply {
-            setText(R.string.button_try_link)
-            setOnClickListener { tryLink(link) }
-        })
-        row.addView(Button(this).apply {
-            setText(R.string.button_use_link)
-            setOnClickListener { useLink(link) }
-        })
+        row.addView(smallButton(R.string.button_try_link) { tryLink(link) })
+        row.addView(smallButton(R.string.button_use_link) { useLink(link) })
         return row
     }
+
+    private fun smallButton(textRes: Int, onClick: () -> Unit): Button =
+        Button(this).apply {
+            setText(textRes)
+            textSize = 13f
+            isAllCaps = false
+            setTextColor(getColor(R.color.brand_purple))
+            setBackgroundResource(R.drawable.btn_secondary)
+            minimumWidth = dp(64)
+            minimumHeight = dp(40)
+            stateListAnimator = null
+            setPadding(dp(12), 0, dp(12), 0)
+            layoutParams = LinearLayout.LayoutParams(WRAP, WRAP).apply {
+                leftMargin = dp(6)
+            }
+            setOnClickListener { onClick() }
+        }
 
     private fun tryLink(link: Instagram.InboxLink) {
         try {

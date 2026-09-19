@@ -37,6 +37,7 @@ private class DmRemoteViewsFactory(
     override fun getViewAt(position: Int): RemoteViews? {
         val message = messages.getOrNull(position) ?: return null
         val views = RemoteViews(context.packageName, R.layout.widget_dm_row)
+        views.setImageViewBitmap(R.id.row_avatar, Avatars.forSender(context, message.sender))
         views.setTextViewText(R.id.row_sender, message.sender)
         views.setTextViewText(R.id.row_preview, message.preview)
         views.setTextViewText(R.id.row_time, relativeTime(message.postedAt))

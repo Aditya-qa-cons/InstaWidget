@@ -4,23 +4,25 @@
     android:layout_height="match_parent"
     android:background="@drawable/widget_background"
     android:orientation="vertical"
-    android:padding="8dp">
+    android:padding="10dp">
 
     <LinearLayout
         android:id="@+id/widget_header"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:background="@drawable/brand_pill"
         android:gravity="center_vertical"
         android:orientation="horizontal"
-        android:paddingLeft="8dp"
-        android:paddingRight="8dp"
-        android:paddingBottom="6dp">
+        android:paddingLeft="12dp"
+        android:paddingTop="7dp"
+        android:paddingRight="6dp"
+        android:paddingBottom="7dp">
 
         <ImageView
-            android:layout_width="20dp"
-            android:layout_height="20dp"
+            android:layout_width="16dp"
+            android:layout_height="16dp"
             android:contentDescription="@string/app_name"
-            android:src="@drawable/ic_dm" />
+            android:src="@drawable/ic_dm_light" />
 
         <TextView
             android:layout_width="0dp"
@@ -28,38 +30,65 @@
             android:layout_marginLeft="8dp"
             android:layout_weight="1"
             android:ellipsize="end"
+            android:letterSpacing="0.01"
             android:maxLines="1"
             android:text="@string/widget_title"
-            android:textColor="@color/widget_title"
-            android:textSize="14sp"
+            android:textColor="@color/on_brand"
+            android:textSize="13sp"
             android:textStyle="bold" />
 
         <ImageView
             android:id="@+id/widget_setup"
-            android:layout_width="30dp"
-            android:layout_height="30dp"
+            android:layout_width="26dp"
+            android:layout_height="26dp"
             android:contentDescription="@string/widget_setup_description"
-            android:padding="6dp"
-            android:src="@drawable/ic_settings" />
+            android:padding="5dp"
+            android:src="@drawable/ic_settings_light" />
     </LinearLayout>
 
     <ListView
         android:id="@+id/dm_list"
         android:layout_width="match_parent"
         android:layout_height="0dp"
+        android:layout_marginTop="6dp"
         android:layout_weight="1"
-        android:divider="@color/widget_divider"
-        android:dividerHeight="1dp" />
+        android:divider="@android:color/transparent"
+        android:dividerHeight="5dp"
+        android:scrollbars="none" />
 
-    <TextView
+    <LinearLayout
         android:id="@+id/dm_empty"
         android:layout_width="match_parent"
         android:layout_height="0dp"
+        android:layout_marginTop="6dp"
         android:layout_weight="1"
         android:gravity="center"
-        android:padding="12dp"
-        android:text="@string/widget_empty"
-        android:textColor="@color/widget_secondary"
-        android:textSize="13sp" />
+        android:orientation="vertical"
+        android:padding="10dp">
+
+        <ImageView
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:contentDescription="@string/widget_empty_title"
+            android:src="@drawable/ic_heart" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="@string/widget_empty_title"
+            android:textColor="@color/widget_title"
+            android:textSize="14sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            android:gravity="center"
+            android:text="@string/widget_empty_body"
+            android:textColor="@color/widget_secondary"
+            android:textSize="12sp" />
+    </LinearLayout>
 
 </LinearLayout>
