@@ -12,6 +12,22 @@
         Settings > Notification access (see SetupActivity).
     -->
 
+    <!--
+      Instagram has to be declared visible. From targetSdk 30 the platform
+      hides other packages by default, which makes resolveActivity() on
+      instagram://direct_inbox return null even when Instagram is installed.
+      The widget would then quietly fall back to the web inbox in a browser
+      instead of opening the app.
+    -->
+    <queries>
+        <package android:name="com.instagram.android" />
+        <package android:name="com.instagram.lite" />
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <data android:scheme="instagram" />
+        </intent>
+    </queries>
+
     <application
         android:allowBackup="false"
         android:icon="@mipmap/ic_launcher"

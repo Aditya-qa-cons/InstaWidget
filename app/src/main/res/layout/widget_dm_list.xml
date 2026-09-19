@@ -34,12 +34,13 @@
             android:textSize="14sp"
             android:textStyle="bold" />
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/widget_open_hint"
-            android:textColor="@color/widget_secondary"
-            android:textSize="11sp" />
+        <ImageView
+            android:id="@+id/widget_setup"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:contentDescription="@string/widget_setup_description"
+            android:padding="6dp"
+            android:src="@drawable/ic_settings" />
     </LinearLayout>
 
     <ListView

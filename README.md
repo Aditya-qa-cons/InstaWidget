@@ -91,6 +91,15 @@ specific conversation**. Every row therefore opens the general inbox. This is
 expected behaviour, not a bug. If Instagram isn't installed, the widget falls
 back to `https://www.instagram.com/direct/inbox/`.
 
+Every tap on the widget opens that inbox: the header, each row, and the empty
+state. The one exception is the small gear in the header corner, which opens
+the setup screen so it stays reachable from the home screen.
+
+Reaching Instagram at all needs the `<queries>` block in the manifest. From
+targetSdk 30 the platform hides other packages, so `resolveActivity()` returns
+null for `instagram://direct_inbox` even with Instagram installed, and the
+widget silently falls through to the browser.
+
 Two other things follow from the design:
 
 * Previews only appear for DMs that arrive **while notification access is

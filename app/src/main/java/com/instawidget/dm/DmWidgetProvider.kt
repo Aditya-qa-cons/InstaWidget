@@ -51,15 +51,18 @@ class DmWidgetProvider : AppWidgetProvider() {
         views.setRemoteAdapter(R.id.dm_list, serviceIntent)
         views.setEmptyView(R.id.dm_list, R.id.dm_empty)
 
-        // Tapping the header opens the Instagram inbox.
+        // Every part of the widget opens the Instagram inbox: the header, each
+        // row, and the empty state.
         views.setOnClickPendingIntent(R.id.widget_header, inboxPendingIntent(context))
+        views.setOnClickPendingIntent(R.id.dm_empty, inboxPendingIntent(context))
 
         // Rows fill in this template; every row opens the same inbox because
         // Instagram exposes no per-thread deep link.
         views.setPendingIntentTemplate(R.id.dm_list, inboxTemplatePendingIntent(context))
 
-        // The empty state should be tappable too.
-        views.setOnClickPendingIntent(R.id.dm_empty, emptyStatePendingIntent(context))
+        // The small gear is the one exception, so the setup screen stays
+        // reachable from the home screen without hijacking the widget's tap.
+        views.setOnClickPendingIntent(R.id.widget_setup, setupPendingIntent(context))
 
         return views
     }
@@ -93,11 +96,8 @@ class DmWidgetProvider : AppWidgetProvider() {
         )
     }
 
-    /**
-     * With no messages cached the likely reason is that notification access was
-     * never granted, so the empty state goes to the setup screen instead.
-     */
-    private fun emptyStatePendingIntent(context: Context): PendingIntent {
+    /** Gear in the header corner; the only tap that does not open Instagram. */
+    private fun setupPendingIntent(context: Context): PendingIntent {
         val intent = Intent(context, SetupActivity::class.java)
             .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
         return PendingIntent.getActivity(

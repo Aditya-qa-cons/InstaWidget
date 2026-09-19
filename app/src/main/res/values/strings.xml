@@ -4,8 +4,8 @@
     <string name="listener_label">IG DM Widget notification reader</string>
 
     <string name="widget_title">Instagram DMs</string>
-    <string name="widget_open_hint">Tap to open</string>
-    <string name="widget_empty">No DMs cached yet.\n\nTap here to check notification access, then wait for your next Instagram message.</string>
+    <string name="widget_setup_description">IG DM Widget setup</string>
+    <string name="widget_empty">No DMs cached yet.\n\nNew Instagram messages will show up here. Tap the gear to check setup.</string>
 
     <string name="setup_headline">IG DM Widget</string>
     <string name="setup_explainer">This app puts your most recent Instagram DM previews on your home screen. Tapping the widget opens Instagram\'s direct message inbox.</string>
